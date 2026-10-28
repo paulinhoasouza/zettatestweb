@@ -272,7 +272,7 @@ sequenceDiagram
 | Serviço | Para quê | Variáveis |
 |---|---|---|
 | Supabase | banco, login, API, arquivos | projeto `zetta-propostas` (`vbpktfmngjirwasawktx`), URL e chave publicável em `src/config.js` (D-018) |
-| Cloudflare Pages | build (`npm run build`, saída `dist`) e hospedagem | nenhuma obrigatória; opcional `VITE_MODO_DEMO=true` para um site só de demonstração |
+| Cloudflare Workers (Workers Builds) | Worker `zettatestweb`: build `npm run build`, deploy `npx wrangler deploy` com `wrangler.jsonc` (arquivos de `dist/`, modo SPA) | nenhuma obrigatória; opcional `VITE_MODO_DEMO=true` (variável de build) para um site só de demonstração |
 | Google Fonts | IBM Plex Sans e Plex Mono | nenhuma |
 
 Nunca usar `service_role`, `sb_secret_...` ou a senha do banco em variável `VITE_`: elas vão para o navegador.

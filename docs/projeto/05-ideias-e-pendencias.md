@@ -7,6 +7,7 @@
 | R-06 | O app carrega todas as tabelas e recarrega tudo após cada gravação (v1 e v2) | Lentidão com volume maior | Aceitável na v1; paginar quando passar de algumas centenas de propostas |
 | R-08 | Supabase Free pausa após 7 dias sem uso e não tem backup diário | Perda de acesso ou de dados | Rotina de exportação manual (README já sugere) |
 | R-09 | O banco real foi testado por SQL (gravação, revisões, transições, permissões), mas as telas ainda não rodaram contra ele | Algum detalhe de login, Storage ou anexos pode falhar no primeiro uso | Seguir o `TESTES.md` no site publicado |
+| R-12 | 📌 A Cloudflare publica este repositório como Worker `zettatestweb` (Workers Builds, não Pages). O único build registrado foi do commit `e705f9a` (falhou: código da v1 sem `src/lib`); os commits seguintes, inclusive a v2, não dispararam build | A v2 não está no ar | Reconectar o Git ou disparar o build no painel da Cloudflare; `wrangler.jsonc` já está no repositório |
 | R-10 | Recusa ou cancelamento de proposta não mexe na solicitação, que fica "Em proposta" | Solicitação parada no funil | Decidir se a recusa deve cancelar a solicitação (P-10) |
 
 ## Perguntas em aberto
