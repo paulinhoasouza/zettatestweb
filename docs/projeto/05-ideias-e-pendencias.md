@@ -6,8 +6,7 @@
 | R-02 | Repositório `zettatestweb` está **público**; o guia manda criar privado (`zetta-propostas-web`) | Qualquer pessoa lê o código e, quando o SQL subir, as regras de segurança | Tornar privado antes de subir `supabase/` (P-01) |
 | R-06 | O app carrega todas as tabelas e recarrega tudo após cada gravação (v1 e v2) | Lentidão com volume maior | Aceitável na v1; paginar quando passar de algumas centenas de propostas |
 | R-08 | Supabase Free pausa após 7 dias sem uso e não tem backup diário | Perda de acesso ou de dados | Rotina de exportação manual (README já sugere) |
-| R-09 | O banco real foi testado por SQL (gravação, revisões, transições, permissões), mas as telas ainda não rodaram contra ele | Algum detalhe de login, Storage ou anexos pode falhar no primeiro uso | Seguir o `TESTES.md` no site publicado |
-| R-12 | 📌 Não existe Worker `zettatestweb` na conta Cloudflare (conferido por José em 28/10/2026); o único build antigo falhou e nada foi publicado | A v2 não está no ar | Workers & Pages → Create application → importar `paulinhoasouza/zettatestweb`, nome `zettatestweb`, build `npm run build`, deploy `npx wrangler deploy`; endereço esperado `zettatestweb.plmo.workers.dev` |
+| R-09 | José testou o app publicado em 28/10/2026; o checklist completo do `TESTES.md` (anexos, perfis, relatórios) ainda não foi registrado | Algum caso menos usado pode falhar | Marcar o `TESTES.md` conforme o uso |
 | R-10 | Recusa ou cancelamento de proposta não mexe na solicitação, que fica "Em proposta" | Solicitação parada no funil | Decidir se a recusa deve cancelar a solicitação (P-10) |
 
 ## Perguntas em aberto
@@ -36,6 +35,7 @@
 - **R-05** (validação só no front) → `salvar_proposta` valida itens e desconto no banco, 28/10/2026.
 - **R-07** (anexos órfãos) → propostas e solicitações não são excluídas na v2; anexos excluídos apagam o arquivo, 28/10/2026.
 - **Redesign visual** → feito na v2 (D-013), 28/10/2026.
+- **R-12** (app fora do ar) → José criou o Worker `zettatestweb` na Cloudflare, publicou e testou o app, 28/10/2026.
 - **R-11** (cadastro público ligado) → desligado por José, 28/10/2026.
 - **P-08** (Supabase novo ou antigo) → José escolheu projeto novo; banco v2 instalado em `zetta-propostas`, 28/10/2026 (D-006).
 - **Kanban de propostas** → quadro por etapa na v2 (D-012), 28/10/2026.

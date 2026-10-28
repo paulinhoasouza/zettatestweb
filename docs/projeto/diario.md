@@ -8,3 +8,4 @@
 | 28/10/2026 | José criou o login (admin automático) e desligou o cadastro público; commit da v2 pronto, push aguardando o app do Claude no GitHub | README, 05 |
 | 28/10/2026 | v2 enviada ao GitHub (`8c4ca37`) e `wrangler.jsonc` adicionado (`894b008`); Cloudflare não disparou build para os commits novos (R-12) | 03, 05 |
 | 28/10/2026 | Constatado que o Worker não existe na Cloudflare; publicação pausada por José até criar a aplicação | README, 05 |
+| 28/10/2026 | José criou o Worker `zettatestweb`, publicou a v2 e testou o app; sessão encerrada | README, 05 |
