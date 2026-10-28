@@ -1,95 +1,68 @@
-# Zetta Propostas — gestão comercial
+# Zetta Propostas — gestão comercial (v2)
 
-Aplicação web da Zetta, sem Streamlit, com interface React e backend no Supabase (PostgreSQL, autenticação, API, funções transacionais, controle de acesso e arquivos privados). Implantação do site no Cloudflare Pages, com plano gratuito sujeito às cotas dos provedores.
+App web da Zetta para acompanhar o funil comercial: clientes, solicitações, propostas com itens e revisões, mudanças de status com motivo, o tempo de cada etapa, relatórios e anexos. React + Vite no Cloudflare Pages, Supabase (Postgres, login, API e arquivos) como backend.
 
-## Recursos da versão 1.0
+**Ver sem configurar nada:** abra o site com `?demo` no fim do endereço. O app roda com clientes fictícios guardados só no seu navegador.
 
-- Login com Supabase Auth; sem cadastro público na interface.
-- Controles de equipe: aprovados na tabela `equipe`, perfis administrador/comercial, ativação e desativação.
-- Clientes: cadastrar, pesquisar, editar e excluir se não houver solicitações.
-- Solicitações: cadastrar, pesquisar, editar, prioridade, responsável, prazo, status e motivo de cancelamento; anexos e histórico.
-- Propostas: vincular à solicitação; escopo, itens e quantidades, preços, desconto, validade, pagamento e observações; status de negociação e cancelamento.
-- Gravação **transacional** da proposta, com número `ZP-00001`, snapshot automático a cada revisão e auditoria do banco.
-- Visualização da proposta e impressão/salvamento em PDF pelo navegador.
-- Anexos privados de até 10 MB, com URLs temporárias para download.
-- Dashboard, indicadores, filtros, relatório por intervalo e CSV.
-- Layout adaptado para desktop e celular.
+## O que tem
 
-### Estrutura
+- **Visão geral** — o que precisa de ação hoje (validade vencendo, propostas sem resposta, rascunhos parados, prazos vencidos), valor com o cliente, aprovado no mês, conversão em 90 dias e o funil com os dias em cada etapa.
+- **Propostas** — tabela ou quadro por etapa; cada proposta tem página própria com editor de itens, documento para imprimir em PDF, revisões, histórico e anexos.
+- **Status com regra** — Rascunho → Enviada → Em negociação → Aprovada / Recusada / Cancelada. Transições inválidas são recusadas pelo banco; recusa e cancelamento exigem motivo; aprovar conclui a solicitação.
+- **Solicitações** e **clientes** em gavetas laterais, com responsável da equipe, prazo, anexos e histórico.
+- **Relatórios** por período, com exportação CSV.
+- **Equipe e acessos** — só quem está ativo na tabela `equipe` entra; só administrador gerencia.
+
+## Estrutura
 
 ```
-zetta-propostas-web/
-├── index.html
-├── package.json
-├── vite.config.js
-├── .env.example
-├── .gitignore
+├── index.html, vite.config.js, package.json
+├── public/favicon.svg
 ├── src/
-│   ├── main.jsx
-│   ├── App.jsx                 # todas as telas e formulários
-│   ├── style.css               # identidade visual e responsividade
-│   └── lib/
-│       ├── supabase.js         # inicialização do cliente
-│       ├── data.js             # operações e chamadas de API
-│       └── business.js         # cálculos de negócio (testados)
-├── tests/
-│   └── business.test.js
+│   ├── main.jsx, App.jsx, styles.css
+│   ├── lib/        api.js · supabase.js · demo.js · business.js · format.js · rota.js
+│   ├── components/ Icon.jsx · ui.jsx · Anexos.jsx · Linha.jsx
+│   └── pages/      VisaoGeral · Propostas · PropostaDetalhe · Solicitacoes · Clientes · Relatorios · Equipe · Login
 ├── supabase/
-│   ├── 01_migracao.sql         # banco, segurança, RPC, storage
-│   └── 02_admin_inicial.sql    # primeiro administrador
-└── GUIA-PUBLICACAO.md
+│   ├── 01_estrutura.sql      banco completo: tabelas, RLS, funções, gatilhos, bucket de anexos
+│   ├── 02_admin_inicial.sql  primeiro administrador
+│   └── testes/               stub do Supabase + testes de comportamento (Postgres local)
+├── tests/business.test.js    testes das regras (npm test)
+└── docs/projeto/             dossiê do projeto: decisões, arquitetura com fluxogramas, pendências
 ```
 
-## Por que não há um servidor Express/FastAPI?
+A arquitetura completa, com os fluxogramas de status, o modelo de dados e a sequência de cada gravação, está em [docs/projeto/03-arquitetura.md](docs/projeto/03-arquitetura.md).
 
-O backend **não é simulado**: é executado no Supabase. O PostgreSQL armazena os dados, a API PostgREST consulta as tabelas sob RLS, o Auth emite tokens e a função `salvar_proposta` valida e salva proposta + itens + revisão na mesma transação. As operações de criação/edição de propostas só podem ocorrer por essa função protegida. O React consome esta API autenticada com a chave pública, sem uma máquina/instância para manter ligada. Isso reduz a complexidade e viabiliza hospedagem gratuita.
+## Publicar
 
-A aplicação necessita de uma conexão real com o Supabase; o arquivo ZIP não inclui credenciais nem banco de dados.
+Siga o [GUIA-PUBLICACAO.md](GUIA-PUBLICACAO.md) (tudo pelo navegador) e depois o checklist [TESTES.md](TESTES.md).
 
-## Instalação local (opcional)
+## Rodar no computador (opcional)
 
-Instale Node.js 20 ou superior. Na pasta do projeto:
+Node.js 20 ou superior.
 
 ```bash
-cp .env.example .env
-# edite .env com a URL e chave PUBLICÁVEL do seu projeto
+cp .env.example .env    # preencha a URL e a chave PÚBLICA do Supabase
 npm install
-npm run dev
-npm test
+npm run dev             # http://localhost:5173  (ou http://localhost:5173/?demo)
+npm test                # testes das regras de negócio
 ```
 
-Abra o endereço informado no terminal (habitualmente `http://localhost:5173`).
+Testes do banco (precisa de PostgreSQL local; não rode no Supabase de produção):
 
-**Nunca** use `service_role`, chave secreta ou senha do banco em `VITE_...`. Variáveis `VITE_` ficam visíveis no JavaScript do navegador por design. A segurança depende das políticas RLS e da autenticação do Supabase.
+```bash
+createdb zt_teste
+psql -d zt_teste -f supabase/testes/stub_supabase.sql
+psql -d zt_teste -f supabase/01_estrutura.sql
+psql -d zt_teste -f supabase/testes/testes_banco.sql   # termina com "TODOS OS TESTES DO BANCO PASSARAM"
+```
 
-## Publicação gratuita
+## Segurança
 
-Consulte [GUIA-PUBLICACAO.md](GUIA-PUBLICACAO.md) para os passos pelo navegador, sem instalar nada no computador.
-
-## Segurança e operação
-
-- O arquivo SQL remove antigas políticas permissivas das tabelas da Zetta e exige vínculo ativo em `equipe`.
-- Crie o primeiro administrador após a migração, usando o e-mail real de um usuário existente no Supabase Auth.
-- Desative o cadastro público em **Supabase > Authentication > Settings** (a localização exata pode variar; procure "Allow new users to sign up").
-- Não publique dados de clientes em repositórios públicos ou exemplos.
-- O Supabase Free não oferece backup diário automático; exporte periodicamente seus dados pelo painel SQL/Table Editor e guarde uma cópia segura.
-- É uma primeira versão funcional baseada em código. Antes de usar em vendas reais, teste todos os fluxos, avalie exigências de LGPD, política de retenção, permissões dos colaboradores e termos comerciais/tributários dos seus documentos.
-
-## Limitações deliberadas da v1
-
-- PDFs usam a impressão do navegador. O documento não possui assinatura eletrônica, emissão de NF ou envio automático por e-mail/WhatsApp.
-- Inclusão de novo login é feita no painel do Supabase Auth; dentro do sistema o administrador concede permissão usando o UUID gerado no Auth.
-- Comercial e administrador podem trabalhar com os mesmos clientes/propostas; o administrador também gerencia acesso dos usuários.
-- Auditoria é interna (log das operações sobre clientes, solicitações e propostas), não substitui logs regulatórios nem trilha certificada.
-- Supabase gratuito pode pausar após 7 dias sem atividade; há cotas. Não é garantia de disponibilidade para um sistema crítico.
-
-## Problemas frequentes
-
-- **Tela "Configure a conexão"**: faltam `VITE_SUPABASE_URL` e/ou `VITE_SUPABASE_ANON_KEY` nas variáveis do build Cloudflare. Configure e faça novo deploy.
-- **"Acesso ainda não autorizado"**: usuário logou, mas falta executar `02_admin_inicial.sql` com e-mail correto ou está inativo em `equipe`.
-- **Tabela não encontrada / função salvar_proposta inexistente**: execute `01_migracao.sql` no mesmo projeto Supabase da URL configurada.
-- **Falha ao anexar**: confirme bucket privado `zetta-anexos` e políticas storage criados pelo SQL.
-- **Login incorreto**: confirme usuário em Authentication > Users e se o provedor Email está ativado.
-- **Build do Cloudflare falha**: confira Build command `npm run build`, output `dist`, Node 20+ e conteúdo do repo na raiz.
+- O endereço e a chave **publicável** do Supabase ficam em `src/config.js` — eles são públicos por natureza (vão para o navegador). Nunca coloque ali `service_role`, `sb_secret_...` ou a senha do banco.
+- Propostas só são gravadas pelas funções `salvar_proposta` e `mudar_status_proposta`; as tabelas não aceitam escrita direta.
+- Desative o cadastro público em Supabase → Authentication → Sign In / Providers ("Allow new users to sign up").
+- Não suba dados de clientes reais para o GitHub. Prefira repositório **privado**.
+- Supabase Free não faz backup diário e pausa após 7 dias sem uso: exporte os dados periodicamente.
 
 © Zetta. Uso interno.

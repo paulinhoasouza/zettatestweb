@@ -6,7 +6,7 @@
 |---|---|
 | **Cliente** | Uso interno da Zetta (possível produto para venda a outras PMEs) |
 | **Tipo** | em desenvolvimento |
-| **Fase atual** | MVP — versão 1.0 em código, sem homologação registrada |
+| **Fase atual** | MVP — v2 com banco instalado; aguardando publicação do código e homologação |
 | **Responsáveis Zetta** | José |
 | **Repositório** | https://github.com/paulinhoasouza/zettatestweb |
 | **Atualizado em** | 28/10/2026 |
@@ -18,16 +18,15 @@ A Zetta precisa organizar as oportunidades comerciais: quem pediu o quê, em que
 Um sistema web com login restrito à equipe, cadastro de clientes, solicitações (demandas) e propostas versionadas, com PDF pela impressão do navegador, anexos privados, painel de indicadores e relatório exportável em CSV. Detalhes em [Solução](02-solucao.md).
 
 ## Estado atual
-- 📌 O front-end (`src/App.jsx`, 170 linhas, e `src/style.css`) está no repositório e cobre todas as telas.
-- 📌 **A camada por trás do front não está no repositório**: `src/lib/supabase.js`, `src/lib/data.js`, `src/lib/business.js`, a pasta `supabase/` (SQL de banco, segurança e da função `salvar_proposta`) e `tests/`. O README os descreve, mas o build falha sem eles. Ver R-01 em [Ideias e pendências](05-ideias-e-pendencias.md).
-- 📌 O repositório está público, embora o guia de publicação peça um repositório privado (R-02).
-- Não há registro de homologação (o checklist `TESTES.md` existe, mas não foi marcado).
+- ✅ v2 reescrita (D-005) e banco novo instalado no Supabase `zetta-propostas` (São Paulo) em 28/10/2026 (D-006), testado por SQL direto no projeto: numeração, totais, revisões, transições, motivo obrigatório e bloqueio de escrita direta.
+- ✅ José criou o login `paulinhoalcantara44@gmail.com` em 28/10/2026 e ele entrou como administrador; cadastro público desligado.
+- ⏳ Falta publicar o código (precisa do GitHub vinculado ao Claude) e rodar o `TESTES.md` no site.
+- 🧪 Decisões D-006 a D-018 da reescrita aguardam confirmação (P-09).
 
 ## Próximos passos
-1. Localizar o pacote original (ZIP) e subir `src/lib/`, `supabase/` e `tests/` — José
-2. Decidir se o repositório fica privado (P-01) — José e sócia
-3. Revisar este dossiê e transformar em ✅ o que já é decisão consciente — José
-4. Só então seguir para o redesign visual
+1. Vincular o GitHub ao Claude para o push da v2 — José
+2. Tornar o repositório privado (P-01) — José
+3. Seguir o `TESTES.md` no site publicado — José e Claude
 
 ## Mapa do dossiê
 - [Descoberta](01-descoberta.md) · [Solução](02-solucao.md) · [Arquitetura](03-arquitetura.md) · [Decisões](04-decisoes.md) · [Ideias e pendências](05-ideias-e-pendencias.md) · [Diário](diario.md)
