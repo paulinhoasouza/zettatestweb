@@ -20,11 +20,11 @@ Um sistema web com login restrito à equipe, cadastro de clientes, solicitaçõe
 ## Estado atual
 - ✅ v2 reescrita (D-005) e banco novo instalado no Supabase `zetta-propostas` (São Paulo) em 28/10/2026 (D-006), testado por SQL direto no projeto: numeração, totais, revisões, transições, motivo obrigatório e bloqueio de escrita direta.
 - ✅ José criou o login `paulinhoalcantara44@gmail.com` em 28/10/2026 e ele entrou como administrador; cadastro público desligado.
-- ⏳ Falta publicar o código (precisa do GitHub vinculado ao Claude) e rodar o `TESTES.md` no site.
+- ✅ Código da v2 no GitHub (`main`). ⏳ Falta criar a aplicação na Cloudflare para publicar (R-12) e rodar o `TESTES.md` no site.
 - 🧪 Decisões D-006 a D-018 da reescrita aguardam confirmação (P-09).
 
 ## Próximos passos
-1. Vincular o GitHub ao Claude para o push da v2 — José
+1. Criar a aplicação `zettatestweb` na Cloudflare ligada ao repositório (R-12) — José
 2. Tornar o repositório privado (P-01) — José
 3. Seguir o `TESTES.md` no site publicado — José e Claude
 
