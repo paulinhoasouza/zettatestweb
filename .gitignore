@@ -4,3 +4,5 @@ dist
 .env.local
 .taste-skill
 *.log
+.wrangler
+.dev.vars*
