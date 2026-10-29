@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { api } from '../lib/api.js'
-import { Marca } from '../components/Icon.jsx'
+import { Logo } from '../components/Icon.jsx'
 import { Campo } from '../components/ui.jsx'
 
 export default function Login() {
@@ -20,15 +20,16 @@ export default function Login() {
   return (
     <main className="login">
       <section className="login-assinatura" aria-label="Zetta Propostas">
-        <div className="produto produto-claro"><Marca tamanho={36} /><div><strong>Zetta Propostas</strong><span>Gestão comercial da Zetta</span></div></div>
+        <Logo altura={44} clara />
         <div className="login-frase">
           <h2>Da solicitação ao aceite, sem perder nenhuma proposta pelo caminho.</h2>
           <p>Clientes, demandas, propostas com revisões e o tempo de cada etapa num só lugar.</p>
         </div>
-        <p className="login-pe">Zetta · Campo Grande, MS</p>
+        <p className="login-pe">ZettaMinds · Campo Grande, MS</p>
       </section>
       <section className="login-form-area">
         <form className="login-form" onSubmit={entrar}>
+          <span className="login-produto">Zetta Propostas</span>
           <h1>Entrar</h1>
           <p className="login-sub">Use o e-mail e a senha cadastrados pela Zetta.</p>
           <Campo rotulo="E-mail">{id => <input id={id} type="email" autoComplete="email" required value={email} onChange={e => setEmail(e.target.value)} />}</Campo>

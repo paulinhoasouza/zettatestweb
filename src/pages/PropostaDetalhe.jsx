@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react'
 import { useApp, TituloTela, Abas, Pill, Botao, Campo, Dialogo, Vazio, Bloco } from '../components/ui.jsx'
 import Anexos from '../components/Anexos.jsx'
 import Linha from '../components/Linha.jsx'
-import Icon, { Marca } from '../components/Icon.jsx'
+import Icon, { Logo } from '../components/Icon.jsx'
 import { api } from '../lib/api.js'
 import { href, ir } from '../lib/rota.js'
 import {
@@ -290,7 +290,7 @@ function Documento({ proposta, itens, cliente }) {
       </div>
       <article className="documento" id="documento">
         <header className="doc-topo">
-          <div className="doc-marca"><Marca tamanho={34} /><div><strong>Zetta</strong><span>Soluções digitais, automação e BI</span></div></div>
+          <div className="doc-marca"><Logo altura={46} /></div>
           <div className="doc-numero"><span>Proposta comercial</span><strong className="mono">{proposta.numero}</strong><span>Revisão {proposta.revisao_atual}</span></div>
         </header>
         <h1>{proposta.titulo}</h1>
@@ -313,7 +313,7 @@ function Documento({ proposta, itens, cliente }) {
         <h2>Condições de pagamento</h2>
         <p className="doc-texto">{proposta.condicoes_pagamento || 'A combinar.'}</p>
         {proposta.observacoes && <><h2>Observações</h2><p className="doc-texto">{proposta.observacoes}</p></>}
-        <footer className="doc-rodape">Zetta · Campo Grande, MS</footer>
+        <footer className="doc-rodape">ZettaMinds · Automação, inteligência e resultados · Campo Grande, MS</footer>
       </article>
     </div>
   )

@@ -5,7 +5,7 @@ import {
   validarProposta, transicaoValida, exigeMotivo, podeEditar, subtotal, centavos, SOLICITACAO_ATIVA,
 } from './business.js'
 
-const CHAVE = 'zetta-propostas-demo-v2'
+const CHAVE = 'zetta-propostas-demo-v3'
 const uid = () => (globalThis.crypto?.randomUUID ? crypto.randomUUID() : `id-${Math.random().toString(36).slice(2)}${Date.now()}`)
 const copia = o => JSON.parse(JSON.stringify(o))
 const pausa = (ms = 120) => new Promise(r => setTimeout(r, ms))
@@ -36,6 +36,7 @@ function semear() {
     ['recanto', 'Escola Recanto do Saber', 'Fernanda Lopes', 'Campo Grande', '(67) 99361-2047', -9],
     ['tres', 'Agropecuária Três Lagoas', 'Antônio Siqueira', 'Três Lagoas', '(67) 99876-3354', -7],
     ['visao', 'Ótica Visão Central', 'Bruna Okada', 'Campo Grande', '(67) 99420-1189', -14],
+    ['cerrado', 'Restaurante Sabor do Cerrado', 'Ana Paula Rezende', 'Campo Grande', '(67) 99215-8840', -2],
   ].forEach(([k, nome, contato, cidade, telefone, criado]) => {
     cli[k] = uid()
     db.clientes.push({ id: cli[k], nome, contato, cidade, telefone, email: null, documento: null, observacoes: null, criado_em: dia(criado), atualizado_em: dia(criado), criado_por: JOSE })
@@ -68,6 +69,7 @@ function semear() {
   solicitacao('lembrete', 'visao', 'Lembrete de retorno de clientes', 'Avisar o cliente quando completar um ano da última consulta.', 'Baixa', MARINA, -12, 20, [['Aberta', -12], ['Em proposta', -5]])
   solicitacao('medicoes', 'bonfim', 'Controle de medições de obra', 'Medições quinzenais de empreiteiros, hoje feitas em planilhas soltas.', 'Alta', JOSE, -10, 8, [['Aberta', -10], ['Em proposta', -6]])
   solicitacao('matriculas', 'recanto', 'Matrículas online', 'Rematrícula e pagamento da primeira parcela pelo site.', 'Media', MARINA, -9, -2, [['Aberta', -9]])
+  solicitacao('cardapio', 'cerrado', 'Cardápio digital com pedidos na mesa', 'Cliente lê o QR code, faz o pedido e a cozinha recebe na hora.', 'Media', MARINA, -2, 9, [['Aberta', -2], ['Em analise', -1]])
   solicitacao('relatorio', 'tres', 'Relatório mensal automático de vendas', 'Fechamento mensal por vendedor e por produto enviado por e-mail.', 'Baixa', MARINA, -7, 10, [['Aberta', -7], ['Em analise', -3]])
 
   const proposta = (solK, titulo, escopo, itens, desconto, eventos, { validade, motivo, pagamento, revisoes = 1 } = {}) => {
@@ -135,7 +137,7 @@ function semear() {
     [['Rascunho', -6]], { validade: 24 })
   proposta('lembrete', 'Lembretes de retorno por WhatsApp', 'Mensagem automática no aniversário de um ano da última consulta, com link para agendar.',
     [item('Automação de lembretes por WhatsApp', 1, 2900), item('Manutenção mensal', 6, 220)], 0,
-    [['Rascunho', -5], ['Enviada', -2]], { validade: 6 })
+    [['Rascunho', -3], ['Enviada', -2]], { validade: 6 })
   return db
 }
 

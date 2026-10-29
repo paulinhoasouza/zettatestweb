@@ -31,8 +31,8 @@ export function Campo({ rotulo: r, obrigatorio, dica, children, className = '' }
 
 // ---------------------------------------------------------------- status
 const TOM = {
-  Rascunho: 'neutro', Enviada: 'info', 'Em negociacao': 'aviso', Aprovada: 'positivo', Recusada: 'negativo', Cancelada: 'neutro',
-  Aberta: 'info', 'Em analise': 'aviso', 'Em proposta': 'info', Concluida: 'positivo',
+  Rascunho: 'neutro', Enviada: 'info', 'Em negociacao': 'roxo', Aprovada: 'positivo', Recusada: 'negativo', Cancelada: 'neutro',
+  Aberta: 'info', 'Em analise': 'aviso', 'Em proposta': 'roxo', Concluida: 'positivo',
   Baixa: 'neutro', Media: 'neutro', Alta: 'aviso', Critica: 'negativo',
 }
 export function Pill({ children, tom }) {
@@ -258,5 +258,54 @@ export function ListaBarras({ linhas, formato = brl }) {
         </li>
       ))}
     </ol>
+  )
+}
+
+// ---------------------------------------------------------------- v3: cartões de indicador
+// O primeiro cartão (destaque) é cheio com o gradiente da marca; os outros são brancos.
+// Cada cartão leva a uma tela por uma seta no canto, e o rodapé diz contra o que se compara.
+export function CartoesKpi({ itens }) {
+  return (
+    <div className="kpi-cartoes">
+      {itens.map((k, i) => (
+        <section key={k.rotulo} className={`kpi-cartao ${i === 0 ? 'kpi-destaque' : ''}`} aria-label={k.rotulo}>
+          <header>
+            <h2>{k.rotulo}</h2>
+            {k.link && <a className="kpi-seta" href={k.link} aria-label={`Abrir ${k.rotulo.toLowerCase()}`}><Icon nome="diagonal" tamanho={15} /></a>}
+          </header>
+          <p className="kpi-numero num">{k.valor}</p>
+          <p className={`kpi-rodape ${k.tom ? `tom-${k.tom}` : ''}`}>
+            {k.selo != null && <span className="kpi-selo num">{k.selo}</span>}
+            <span>{k.legenda}</span>
+          </p>
+        </section>
+      ))}
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------- v3: barras em cápsula da semana
+// Uma cápsula por dia (domingo a sábado). Dias que já passaram são preenchidos
+// proporcionalmente ao valor; dias que ainda não chegaram aparecem listrados.
+export function BarrasSemana({ dias: serie, rotulo: r, unidade = '' }) {
+  const max = Math.max(...serie.map(d => d.valor || 0), 0)
+  const pico = serie.findIndex(d => !d.futuro && d.valor === max && max > 0)
+  return (
+    <figure className="semana" role="img" aria-label={r}>
+      <div className="semana-barras">
+        {serie.map((d, i) => {
+          const altura = max ? Math.max(8, Math.round((100 * d.valor) / max)) : 0
+          return (
+            <div key={d.chave} className={`semana-dia ${d.futuro ? 'futuro' : ''} ${d.hoje ? 'hoje' : ''}`}>
+              <div className="semana-trilho" title={d.futuro ? `${d.nome}: ainda não chegou` : `${d.nome}: ${d.valor}${unidade}`}>
+                {!d.futuro && d.valor > 0 && <span className={`semana-valor ${i === pico ? 'pico' : ''}`} style={{ height: `${altura}%` }} />}
+                {i === pico && <em className="semana-etiqueta num">{d.valor}</em>}
+              </div>
+              <span className="semana-nome">{d.letra}</span>
+            </div>
+          )
+        })}
+      </div>
+    </figure>
   )
 }

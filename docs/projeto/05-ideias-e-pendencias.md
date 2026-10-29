@@ -24,6 +24,8 @@
 | P-11 | Administrador poderá reabrir proposta encerrada, ou reabrir sempre exige proposta nova? | José | 28/10/2026 | aberta |
 
 ## Ideias (backlog)
+- 💡 Seletor de cor de destaque em Preferências (visto na referência da v3) — 29/10/2026
+- 💡 Notificações (sino no topo) quando uma validade estiver para vencer — 29/10/2026
 - 💡 Arrastar cartões no quadro para mudar o status (hoje o quadro só mostra; D-012)
 - 💡 Relatório de ciclo de venda: dias médios de Rascunho até a decisão, por responsável
 - 💡 Envio da proposta por e-mail/WhatsApp — listado como limitação da v1

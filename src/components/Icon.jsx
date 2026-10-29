@@ -1,3 +1,7 @@
+import marcaPng from '../assets/marca/zettaminds-marca.png'
+import logoPng from '../assets/marca/zettaminds-logo.png'
+import logoBrancaPng from '../assets/marca/zettaminds-logo-branca.png'
+
 // Conjunto próprio de ícones de contorno (16px, traço 1.5) — sem dependência externa.
 const P = {
   visao: 'M3 3h7v9H3zM14 3h7v5h-7zM14 12h7v9h-7zM3 16h7v5H3z',
@@ -27,6 +31,9 @@ const P = {
   relogio: 'M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM12 6v6l4 2',
   info: 'M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20zM12 16v-4M12 8h.01',
   externo: 'M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6M15 3h6v6M10 14 21 3',
+  diagonal: 'M7 17 17 7M8 7h9v9',
+  celular: 'M7 2h10a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zM11 18h2',
+  raio: 'M13 2 4 14h7l-1 8 9-12h-7z',
 }
 
 export default function Icon({ nome, tamanho = 16, className = '', titulo }) {
@@ -40,13 +47,13 @@ export default function Icon({ nome, tamanho = 16, className = '', titulo }) {
   )
 }
 
-// Marca da Zetta Propostas: um "Z" desenhado como uma seta de fluxo (do pedido à proposta).
+
+// Marca ZettaMinds (o símbolo), para espaços pequenos.
 export function Marca({ tamanho = 28 }) {
-  return (
-    <svg width={tamanho} height={tamanho} viewBox="0 0 32 32" aria-hidden="true" className="marca">
-      <rect width="32" height="32" rx="8" fill="var(--accent)" />
-      <path d="M9.5 10h12.5L10 22h12.5" fill="none" stroke="#fff" strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" />
-      <circle cx="22.5" cy="22" r="1.9" fill="#fff" />
-    </svg>
-  )
+  return <img src={marcaPng} width={Math.round(tamanho * 0.93)} height={tamanho} alt="" className="marca" />
+}
+
+// Logo completa ZettaMinds. `clara` = versão com "Zetta" em branco, para fundos escuros.
+export function Logo({ altura = 36, clara = false }) {
+  return <img src={clara ? logoBrancaPng : logoPng} height={altura} width={Math.round(altura * 3.05)} alt="ZettaMinds" className="logo" />
 }

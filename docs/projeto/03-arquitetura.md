@@ -31,7 +31,8 @@ Não há servidor próprio (D-001). O navegador usa a chave pública; quem garan
 ```
 src/
 ├── main.jsx, App.jsx        # moldura, login, carregamento e rotas
-├── styles.css               # tokens e estilo (D-013)
+├── styles.css               # tokens e estilo (D-019: gradiente ZettaMinds)
+├── assets/marca/            # logo ZettaMinds (normal, com "Zetta" em branco, símbolo)
 ├── lib/
 │   ├── api.js               # interface única de dados: Supabase ou demonstração
 │   ├── supabase.js          # cliente com a chave pública (lida de src/config.js, D-018)

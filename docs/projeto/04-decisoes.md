@@ -2,6 +2,15 @@
 
 > Em 21/10/2026 a Zetta reiniciou a estruturação dos projetos. As escolhas abaixo foram encontradas no código e na documentação; ficam como 🧪 hipótese até José confirmar que foram decisões conscientes.
 
+## D-019 — Visual v3: identidade ZettaMinds com gradiente azul → roxo → vermelho
+- **Data:** 29/10/2026
+- **Status:** ✅ decidido (José pediu o visual a partir de uma referência de dashboard, com as cores em gradiente do botão e da logo ZettaMinds)
+- **Contexto:** José trouxe uma referência de painel de gestão (cartões arredondados, primeiro indicador em destaque, barras em cápsula, lista com ícones coloridos) e pediu as cores azul, roxo e vermelho em degradê e a logo correta da ZettaMinds.
+- **Decisão:** Gradiente da marca (`#1c4feb → #6a2ad0 → #e8234f`, tirado da logo e do botão enviado) no botão principal, no primeiro indicador, nas barras do gráfico, no total da proposta e nos destaques; painéis brancos arredondados (22px) sobre fundo `#f3f4f9`; botões em cápsula; fonte Plus Jakarta Sans; logo ZettaMinds (versões normal e com "Zetta" em branco, recortadas da imagem original) na lateral, no login e no documento da proposta. A visão geral passa a ter: 4 indicadores em cartões, "Movimento da semana" em barras-cápsula (dias futuros listrados), "Próxima ação", lista de propostas com ícones por cliente, "Precisa de ação" e funil.
+- **Alternativas consideradas:** manter o estilo sóbrio da v2 (D-013); seletor de cor de destaque (fica como ideia).
+- **Consequências:** o visual vira identidade da marca; usa gradientes e cores em áreas grandes, que o estilo da v2 evitava de propósito. Regras, dados e banco não mudam.
+- **Quem decidiu:** José
+
 ## D-018 — Endereço e chave pública do Supabase no código (`src/config.js`)
 - **Data:** 28/10/2026
 - **Status:** 🧪 hipótese
@@ -49,7 +58,7 @@
 
 ## D-013 — Estilo visual "folha sobre moldura" com o laranja da Zetta nos dados
 - **Data:** 28/10/2026
-- **Status:** 🧪 hipótese (o uso das skills design-taste-frontend e awesome-design foi pedido por José ✅)
+- **Status:** substituída por D-019 (29/10/2026) (o uso das skills design-taste-frontend e awesome-design foi pedido por José ✅)
 - **Contexto:** José pediu um design melhor usando as skills design-taste-frontend e awesome-design.
 - **Decisão:** Estilo de app `framed-sheet` (moldura cinza-azulada, trabalho numa folha branca, cor só nos dados) com o par de botões preto/branco e o cartão de assinatura do Airtable no login. Fonte IBM Plex Sans; laranja Zetta escurecido (`#b4500e`) só em dados e na marca.
 - **Alternativas consideradas:** estilo `accent-ladder` (tons do laranja nas áreas); manter o visual laranja da v1.
