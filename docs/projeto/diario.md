@@ -10,3 +10,4 @@
 | 28/10/2026 | Constatado que o Worker não existe na Cloudflare; publicação pausada por José até criar a aplicação | README, 05 |
 | 28/10/2026 | José criou o Worker `zettatestweb`, publicou a v2 e testou o app; sessão encerrada | README, 05 |
 | 29/10/2026 | v3 visual (D-019) no branch `v3`: gradiente ZettaMinds, logo correta, nova visão geral; regras e banco iguais | 04, 05 |
+| 29/10/2026 | José aprovou o visual; v3 publicada no `main` (`57bad99`), build da Cloudflare com sucesso | README |

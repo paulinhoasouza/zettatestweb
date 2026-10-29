@@ -6,7 +6,7 @@
 |---|---|
 | **Cliente** | Uso interno da Zetta (possível produto para venda a outras PMEs) |
 | **Tipo** | em desenvolvimento |
-| **Fase atual** | MVP — v2 publicada em 28/10/2026, em uso inicial |
+| **Fase atual** | MVP — v3 publicada em 29/10/2026, em uso inicial |
 | **Responsáveis Zetta** | José |
 | **Repositório** | https://github.com/paulinhoasouza/zettatestweb |
 | **Atualizado em** | 28/10/2026 |
@@ -20,7 +20,7 @@ Um sistema web com login restrito à equipe, cadastro de clientes, solicitaçõe
 ## Estado atual
 - ✅ v2 reescrita (D-005) e banco novo instalado no Supabase `zetta-propostas` (São Paulo) em 28/10/2026 (D-006), testado por SQL direto no projeto: numeração, totais, revisões, transições, motivo obrigatório e bloqueio de escrita direta.
 - ✅ José criou o login `paulinhoalcantara44@gmail.com` em 28/10/2026 e ele entrou como administrador; cadastro público desligado.
-- ✅ v2 no ar: Worker `zettatestweb` na Cloudflare, publicado a partir do `main`, testado por José em 28/10/2026.
+- ✅ v3 no ar desde 29/10/2026 (visual ZettaMinds, D-019), aprovada por José; Worker `zettatestweb` na Cloudflare, publicado a partir do `main`. A v2 foi testada por José em 28/10/2026; regras e banco não mudaram na v3.
 - 🧪 Decisões D-006 a D-018 da reescrita aguardam confirmação (P-09).
 
 ## Próximos passos
