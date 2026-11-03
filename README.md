@@ -1,8 +1,8 @@
-# Zetta Propostas — gestão comercial (v2)
+# Zetta Propostas — gestão comercial e operação (v4)
 
-App web da Zetta para acompanhar o funil comercial: clientes, solicitações, propostas com itens e revisões, mudanças de status com motivo, o tempo de cada etapa, relatórios e anexos. React + Vite no Cloudflare Pages, Supabase (Postgres, login, API e arquivos) como backend.
+App web da Zetta para acompanhar o funil comercial (clientes, solicitações, propostas com itens e revisões, status com motivo, o tempo de cada etapa, relatórios e anexos) e a operação do dia a dia: pessoas com treinamentos e documentos que vencem, e o fechamento diário em planilha. React + Vite no Cloudflare Workers, Supabase (Postgres, login, API e arquivos) como backend.
 
-**Ver sem configurar nada:** abra o site com `?demo` no fim do endereço. O app roda com clientes fictícios guardados só no seu navegador.
+**Ver sem configurar nada:** abra o site com `?demo` no fim do endereço. O app roda com clientes, pessoas e fechamentos fictícios guardados só no seu navegador. Na lateral, **Ver como** troca entre administrador, comercial e operacional.
 
 ## O que tem
 
@@ -10,8 +10,11 @@ App web da Zetta para acompanhar o funil comercial: clientes, solicitações, pr
 - **Propostas** — tabela ou quadro por etapa; cada proposta tem página própria com editor de itens, documento para imprimir em PDF, revisões, histórico e anexos.
 - **Status com regra** — Rascunho → Enviada → Em negociação → Aprovada / Recusada / Cancelada. Transições inválidas são recusadas pelo banco; recusa e cancelamento exigem motivo; aprovar conclui a solicitação.
 - **Solicitações** e **clientes** em gavetas laterais, com responsável da equipe, prazo, anexos e histórico.
-- **Relatórios** por período, com exportação CSV.
-- **Equipe e acessos** — só quem está ativo na tabela `equipe` entra; só administrador gerencia.
+- **Relatórios** em três assuntos (Comercial, Pessoas, Fechamentos), por período: indicadores com variação e tendência de 12 meses, evolução por semana ou mês, funil de conversão, desfecho, tempo em cada etapa, desempenho por responsável, mapa de atividade. Gráficos interativos e animados, com dica, teclado e vista em tabela; exportação CSV.
+- **Pessoas** — funcionários, treinamentos e documentos com validade; renovação que guarda o histórico; certificados anexados; visão de vencimentos (vencidos, até 30 dias, 90 dias). Só administrador.
+- **Fechamentos** — a planilha do dia (`.xlsx`, `.xls`, `.csv`, `.ods`) arrastada para o app, com prazo, calendário do mês, conferência pelo administrador, divergência com nota, dia sem expediente e prévia da planilha sem baixar.
+- **Equipe e acessos** — perfis Administrador, Comercial e Operacional (só fechamentos); só quem está ativo na tabela `equipe` entra; só administrador gerencia.
+- **Visual estilo Apple** — vidro translúcido, movimento suave, aparência automática, clara ou escura (botão no topo).
 
 ## Estrutura
 
@@ -20,14 +23,16 @@ App web da Zetta para acompanhar o funil comercial: clientes, solicitações, pr
 ├── public/favicon.svg
 ├── src/
 │   ├── main.jsx, App.jsx, styles.css
-│   ├── lib/        api.js · supabase.js · demo.js · business.js · format.js · rota.js
-│   ├── components/ Icon.jsx · ui.jsx · Anexos.jsx · Linha.jsx
-│   └── pages/      VisaoGeral · Propostas · PropostaDetalhe · Solicitacoes · Clientes · Relatorios · Equipe · Login
+│   ├── lib/        api.js · supabase.js · demo.js · business.js · planilha.js · anima.js · format.js · rota.js
+│   ├── components/ Icon.jsx · ui.jsx · graficos.jsx · Anexos.jsx · Linha.jsx
+│   └── pages/      VisaoGeral · Propostas · PropostaDetalhe · Solicitacoes · Clientes · Relatorios · Pessoas · Fechamentos · Equipe · Login
 ├── supabase/
-│   ├── 01_estrutura.sql      banco completo: tabelas, RLS, funções, gatilhos, bucket de anexos
-│   ├── 02_admin_inicial.sql  primeiro administrador
-│   └── testes/               stub do Supabase + testes de comportamento (Postgres local)
-├── tests/business.test.js    testes das regras (npm test)
+│   ├── 01_estrutura.sql             banco comercial: tabelas, RLS, funções, gatilhos, bucket de anexos
+│   ├── 02_admin_inicial.sql         primeiro administrador
+│   ├── 03_primeiro_admin.sql        gatilho do primeiro administrador
+│   ├── 04_pessoas_fechamentos.sql   v4: perfil operacional, pessoas, fechamentos, acesso por área
+│   └── testes/                      stub do Supabase + testes de comportamento (Postgres local)
+├── tests/                    testes das regras e da leitura de planilhas (npm test)
 └── docs/projeto/             dossiê do projeto: decisões, arquitetura com fluxogramas, pendências
 ```
 
@@ -35,7 +40,7 @@ A arquitetura completa, com os fluxogramas de status, o modelo de dados e a sequ
 
 ## Publicar
 
-Siga o [GUIA-PUBLICACAO.md](GUIA-PUBLICACAO.md) (tudo pelo navegador) e depois o checklist [TESTES.md](TESTES.md).
+Siga o [GUIA-PUBLICACAO.md](GUIA-PUBLICACAO.md) (tudo pelo navegador) e depois o checklist [TESTES.md](TESTES.md). **Atualizando para a v4:** rode antes o `supabase/04_pessoas_fechamentos.sql` no SQL Editor (seção "Atualização v4" do guia). Sem ele, Pessoas e Fechamentos mostram um aviso e o resto continua funcionando.
 
 ## Rodar no computador (opcional)
 
@@ -54,13 +59,16 @@ Testes do banco (precisa de PostgreSQL local; não rode no Supabase de produçã
 createdb zt_teste
 psql -d zt_teste -f supabase/testes/stub_supabase.sql
 psql -d zt_teste -f supabase/01_estrutura.sql
+psql -d zt_teste -f supabase/04_pessoas_fechamentos.sql
 psql -d zt_teste -f supabase/testes/testes_banco.sql   # termina com "TODOS OS TESTES DO BANCO PASSARAM"
+psql -d zt_teste -f supabase/testes/testes_04.sql      # termina com "TODOS OS TESTES DA MIGRAÇÃO 04 PASSARAM"
 ```
 
 ## Segurança
 
 - O endereço e a chave **publicável** do Supabase ficam em `src/config.js` — eles são públicos por natureza (vão para o navegador). Nunca coloque ali `service_role`, `sb_secret_...` ou a senha do banco.
-- Propostas só são gravadas pelas funções `salvar_proposta` e `mudar_status_proposta`; as tabelas não aceitam escrita direta.
+- Propostas só são gravadas pelas funções `salvar_proposta` e `mudar_status_proposta`; as tabelas não aceitam escrita direta. Fechamentos são enviados pela função `registrar_fechamento`.
+- Pessoas guarda dados pessoais e de saúde (ASO): só administradores acessam, inclusive os arquivos. Não use dados reais na demonstração nem no GitHub.
 - Desative o cadastro público em Supabase → Authentication → Sign In / Providers ("Allow new users to sign up").
 - Não suba dados de clientes reais para o GitHub. Prefira repositório **privado**.
 - Supabase Free não faz backup diário e pausa após 7 dias sem uso: exporte os dados periodicamente.

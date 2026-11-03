@@ -41,11 +41,22 @@ Se o projeto Pages da v1 já publica a partir do repositório, o push da v2 já 
 4. Nenhuma variável é necessária (o Supabase está em `src/config.js`). Se existirem `VITE_SUPABASE_URL`/`VITE_SUPABASE_ANON_KEY` da v1, podem ser apagadas: a v2 não as lê.
 5. **Save and Deploy**. Ao terminar, abra o endereço `*.pages.dev`, entre com o login do passo 1 e siga o [TESTES.md](TESTES.md).
 
+## Atualização v4 — Pessoas e Fechamentos (03/11/2026)
+
+A v4 traz duas abas que precisam de tabelas novas no banco. Faça **antes** de levar a v4 para o `main` (5 minutos):
+
+1. Abra https://supabase.com/dashboard/project/vbpktfmngjirwasawktx/sql/new
+2. Cole todo o conteúdo de `supabase/04_pessoas_fechamentos.sql` e clique em **Run**.
+3. O resultado final deve listar `documentos`, `fechamento_ajustes`, `fechamentos`, `funcionarios` e `treinamentos`, todas com `rls_ativo = true`.
+4. O script pode ser executado de novo sem problema (não apaga nem duplica nada).
+
+O que muda para quem já usa: nada nas propostas. O perfil **Operacional** passa a existir em Equipe e acessos, para quem só faz o fechamento do dia. Se a v4 for publicada sem este passo, as abas Pessoas e Fechamentos mostram um aviso e o resto do app funciona normalmente.
+
 ## Liberar acesso para outra pessoa
 
 1. Supabase → **Authentication → Users → Add user** (com Auto Confirm).
 2. Copie o **UID** do usuário criado.
-3. No app → **Equipe e acessos → Liberar acesso**, cole o UID, informe nome, e-mail e perfil.
+3. No app → **Equipe e acessos → Liberar acesso**, cole o UID, informe nome, e-mail e perfil (Administrador, Comercial ou Operacional).
 
 ## Demonstração para prospects
 

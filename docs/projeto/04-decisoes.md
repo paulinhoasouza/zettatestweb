@@ -2,6 +2,62 @@
 
 > Em 21/10/2026 a Zetta reiniciou a estruturação dos projetos. As escolhas abaixo foram encontradas no código e na documentação; ficam como 🧪 hipótese até José confirmar que foram decisões conscientes.
 
+> Atualização de 03/11/2026 (v4): José pediu o visual no estilo Apple, um relatório com mais informações e gráficos interativos, e duas abas novas (Pessoas e Fechamentos). O pedido de cada item está marcado como ✅; as escolhas de detalhe feitas pelo Claude ficam como 🧪 até José confirmar.
+
+## D-025 — Ler as planilhas no navegador com fflate e um leitor próprio
+- **Data:** 03/11/2026
+- **Status:** 🧪 hipótese
+- **Contexto:** Para conferir o fechamento sem baixar o arquivo, a tela precisa abrir a planilha. As bibliotecas conhecidas têm problemas: a versão do SheetJS publicada no npm (0.18.5) tem falhas de segurança conhecidas e a corrigida só é distribuída fora do npm; o exceljs pesa perto de 1 MB.
+- **Decisão:** Leitor próprio de `.xlsx`/`.xlsm` (o arquivo é um ZIP com XML: textos compartilhados, estilos de data e moeda, fórmulas, abas ocultas) e de `.csv` (separador `;` e acentos do Windows-1252), em `src/lib/planilha.js`. A única dependência nova é o `fflate` 0.8.3 (descompactar ZIP, poucos KB, sem falhas conhecidas), carregado só quando alguém abre uma prévia. `.xls` antigo e `.ods` ficam só para baixar.
+- **Alternativas consideradas:** SheetJS (segurança e distribuição), exceljs (tamanho), não ter prévia (a conferência exigiria baixar cada arquivo).
+- **Consequências:** prévia de até 300 linhas e 40 colunas por aba; a demonstração gera planilhas `.xlsx` de verdade para abrir no Excel. Testes em `tests/v4.test.js`.
+- **Quem decidiu:** Claude, a confirmar com José
+
+## D-024 — Perfil "Operacional" e acesso por área
+- **Data:** 03/11/2026
+- **Status:** 🧪 hipótese
+- **Contexto:** O fechamento diário é feito por um funcionário. Com os perfis antigos ele precisaria ser "Comercial" e veria clientes e propostas. As fichas das pessoas têm dados de saúde (ASO), protegidos pela LGPD.
+- **Decisão:** Novo perfil **Operacional**, que só vê e envia fechamentos. No banco, `e_membro()` passa a significar "administrador ou comercial" (as políticas antigas continuam iguais e não se abrem para o operacional), `e_da_equipe()` vale para qualquer integrante ativo e `pode_acessar(entidade)` decide quem lê histórico, anexos e arquivos (a pasta no Storage tem o nome da entidade). Pessoas: só administrador. Fechamentos: toda a equipe vê e envia; só administrador confere, aponta divergência, marca dia sem expediente e muda os ajustes.
+- **Alternativas consideradas:** usar o perfil Comercial para quem fecha o caixa; abrir Pessoas para o Comercial.
+- **Consequências:** a tela esconde o que o perfil não acessa e o banco garante (testes em `supabase/testes/testes_04.sql`). Na demonstração, o seletor "Ver como" troca entre José (admin), Marina (comercial) e Rafael (operacional).
+- **Quem decidiu:** Claude, a confirmar com José
+
+## D-023 — Fechamento diário: uma planilha por dia, conferida pelo administrador
+- **Data:** 03/11/2026
+- **Status:** ✅ decidido (José pediu a aba: "todo dia um funcionário irá fazer o fechamento em Excel e anexar em uma parte do app") · fluxo e regras 🧪
+- **Contexto:** O fechamento é feito em Excel e precisa ficar guardado e controlado: saber que dia faltou, quem enviou, se foi no prazo e se alguém conferiu.
+- **Decisão:** Tabela `fechamentos` com um registro por dia e status **Enviado → Conferido** ou **Divergente** (com nota; a equipe reenvia a planilha corrigida e o dia volta a Enviado), além de **Sem expediente** (feriado, loja fechada, com motivo). A planilha sobe para o Storage e a função `registrar_fechamento` grava o fechamento e o anexo juntos; cada reenvio guarda uma versão nova. A pontualidade conta o **primeiro** envio. `fechamento_ajustes` define os dias com fechamento (padrão segunda a sábado), o horário limite (padrão 20h, no mesmo dia ou no seguinte) e a data de início do controle. O total do dia é opcional e digitado no envio (não é lido da planilha). Tela com o cartão de hoje (arrastar e soltar a planilha, conferir a prévia antes de enviar), resumo de 30 dias ou do mês, calendário com a situação de cada dia, total por dia e últimos envios; cada dia abre uma gaveta com as versões da planilha, a prévia, a conferência e o histórico.
+- **Alternativas consideradas:** vários fechamentos por dia (por caixa ou loja); ler o total automaticamente da planilha; aceitar qualquer arquivo.
+- **Consequências:** migração `supabase/04_pessoas_fechamentos.sql`; relatório de fechamentos (cobertura, pontualidade, total, horário típico, quem enviou). Uma planilha por dia por empresa: se houver mais de um caixa ou loja, o modelo muda (P-14).
+- **Quem decidiu:** José (a aba) e Claude (o fluxo), a confirmar com José
+
+## D-022 — Pessoas: funcionários, treinamentos e documentos com validade
+- **Data:** 03/11/2026
+- **Status:** ✅ decidido (José pediu a aba para ver funcionários, treinamentos, documentação e data de vencimento) · modelo 🧪
+- **Contexto:** Treinamentos (NRs, brigada, primeiros socorros) e documentos (ASO, CNH, contrato de experiência) vencem, e hoje não há um lugar que avise antes.
+- **Decisão:** Tabelas `funcionarios` (situação Ativo, Afastado ou Desligado), `treinamentos` (feito em, validade, carga horária, instituição) e `documentos` (emissão, validade, número). Renovar é registrar de novo: vale o registro mais recente de cada pessoa + nome, e os anteriores ficam em "Histórico de renovações". Um item pede atenção 30 dias antes de vencer. A tela mostra os funcionários em cartões com a situação de cada um e uma visão de vencimentos (vencidos, até 30 dias, 31 a 90 dias, depois, sem validade), com renovação em um clique. Certificados e cópias ficam como anexos do próprio registro. Sugestões de validade (NR-35 e NR-10: 24 meses; NR-33, brigada de incêndio e ASO periódico: 12 meses) aparecem só como ponto de partida, para a pessoa conferir. Quem tem registros não é excluído: muda para Desligado e sai dos vencimentos.
+- **Alternativas consideradas:** uma tabela única de "itens com validade"; validade obrigatória.
+- **Consequências:** só administrador acessa (D-024); a busca global também encontra pessoas; visão geral e menu mostram os vencidos.
+- **Quem decidiu:** José (a aba) e Claude (o modelo), a confirmar com José
+
+## D-021 — Relatórios com três assuntos e gráficos interativos
+- **Data:** 03/11/2026
+- **Status:** ✅ decidido (José pediu a página de relatório com mais informações, gráficos interativos e animações) · composição 🧪
+- **Contexto:** O relatório da v3 tinha quatro números, um gráfico de colunas e duas listas.
+- **Decisão:** Relatórios com seletor **Comercial · Pessoas · Fechamentos** e período (este mês, 3 meses, 12 meses ou datas). Comercial: seis indicadores com variação contra o período anterior e tendência de 12 meses (valor aprovado, conversão, ticket médio, ciclo de venda, valor cotado, valor que não fechou), evolução por semana ou por mês (valor ou quantidade), funil de conversão, desfecho das decididas, tempo em cada etapa, desempenho por responsável, clientes que mais aprovaram, por que não fechou e mapa de atividade por dia. Pessoas e Fechamentos com seus próprios indicadores e gráficos. Todos os gráficos animam ao aparecer e ao mudar o período, mostram uma dica ao passar o mouse ou com as setas do teclado e têm uma vista em tabela. Seguem a skill de visualização de dados: paleta validada pelo script dela, uma escala só por gráfico, barra segmentada no lugar de rosca, cor de status só com ícone e rótulo. Exportação CSV de cada assunto.
+- **Alternativas consideradas:** biblioteca de gráficos (recharts); rosca para o desfecho.
+- **Consequências:** D-014 continua valendo (gráficos em SVG próprio, em `src/components/graficos.jsx`); regras das métricas em `business.js`, com testes.
+- **Quem decidiu:** José (o pedido) e Claude (a composição), a confirmar com José
+
+## D-020 — Visual v4 no estilo Apple, com a marca ZettaMinds
+- **Data:** 03/11/2026
+- **Status:** ✅ decidido (José pediu "design estilo da Apple, com transparência, animações suaves, elegante") · detalhes 🧪
+- **Contexto:** A v3 (D-019) usava o gradiente da marca em áreas grandes, painéis brancos opacos e a fonte Plus Jakarta Sans.
+- **Decisão:** Materiais de vidro translúcido (desfoque com saturação) na lateral, na barra superior fixa, nos cartões, gavetas, diálogos e avisos, sobre um "papel de parede" com o brilho das cores da marca. Fonte do sistema (SF Pro nos aparelhos Apple; Inter nos outros), títulos grandes com espaçamento apertado, uma cor de destaque só para tudo que é clicável (o azul da marca, `#1c4feb`), botões em cápsula que encolhem ao toque, controles segmentados com indicador deslizante, interruptores no estilo iOS, gavetas que entram com efeito de mola (e viram "sheet" de baixo no celular), números que contam ao aparecer e transição suave entre telas. Aparência **automática, clara ou escura** (botão no topo; automática segue o sistema). O gradiente azul → roxo → vermelho fica só para a marca: logo, primeiro indicador, total da proposta e barra do documento. Tudo respeita "reduzir movimento" e "reduzir transparência" do sistema.
+- **Alternativas consideradas:** copiar a linguagem do site da Apple ao pé da letra (azul da Apple, sem gradiente nenhum), descartado para manter a identidade ZettaMinds; manter a v3.
+- **Consequências:** substitui o visual de D-019 (as cores e a logo continuam); `styles.css` reescrito com tokens para claro e escuro; saem Plus Jakarta Sans e IBM Plex Mono. O documento da proposta e o PDF continuam em papel branco.
+- **Quem decidiu:** José (o estilo) e Claude (os detalhes)
+
 ## D-019 — Visual v3: identidade ZettaMinds com gradiente azul → roxo → vermelho
 - **Data:** 29/10/2026
 - **Status:** ✅ decidido (José pediu o visual a partir de uma referência de dashboard, com as cores em gradiente do botão e da logo ZettaMinds)
@@ -49,7 +105,7 @@
 
 ## D-014 — Gráficos e ícones próprios, sem recharts e lucide-react
 - **Data:** 28/10/2026
-- **Status:** 🧪 hipótese
+- **Status:** 🧪 hipótese · mantida na v4 (D-021): os gráficos interativos continuam em SVG próprio; a única dependência nova é o fflate (D-025)
 - **Contexto:** A v1 dependia de duas bibliotecas pesadas para dois gráficos e alguns ícones.
 - **Decisão:** Gráficos em SVG próprios (`ColunasMes`, `ListaBarras`) e um conjunto de ícones próprio (`Icon.jsx`). Dependências ficam só React e Supabase.
 - **Alternativas consideradas:** manter recharts e lucide-react.
