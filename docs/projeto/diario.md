@@ -11,3 +11,5 @@
 | 28/10/2026 | José criou o Worker `zettatestweb`, publicou a v2 e testou o app; sessão encerrada | README, 05 |
 | 29/10/2026 | v3 visual (D-019) no branch `v3`: gradiente ZettaMinds, logo correta, nova visão geral; regras e banco iguais | 04, 05 |
 | 29/10/2026 | José aprovou o visual; v3 publicada no `main` (`57bad99`), build da Cloudflare com sucesso | README |
+| 03/11/2026 | v4 no branch `claude/fervent-maxwell-f0njhi` a pedido de José: visual estilo Apple (D-020), relatórios com gráficos interativos (D-021), abas Pessoas (D-022) e Fechamentos (D-023), perfil Operacional (D-024), leitor de planilhas (D-025); migração `04_pessoas_fechamentos.sql` testada em Postgres local, ainda não aplicada no Supabase (R-13) | README, 01, 02, 03, 04, 05 |
+| 03/11/2026 | Projeto Supabase `zetta-propostas` encontrado pausado e reativado; a confirmação do conector não chegou à tela (R-17), então José aplicou a migração 04 no SQL Editor; Claude conferiu tabelas, políticas e permissões e rodou a verificação do Supabase (R-18); PR #1 aberto | README, 03, 05 |

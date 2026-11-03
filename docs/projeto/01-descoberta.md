@@ -16,6 +16,10 @@ flowchart LR
 ```
 Fluxo provisório — confirmar com José (P-04).
 
+### Operação (informado por José em 03/11/2026)
+- **Fechamento do dia:** todo dia um funcionário faz o fechamento em Excel. O app passa a receber essa planilha (D-023); falta saber o que ela contém e se há mais de um caixa (P-13, P-14).
+- **Pessoas:** é preciso ver os funcionários, os treinamentos, a documentação e as datas de vencimento (D-022). Não está registrado se a equipe é da própria Zetta ou de um cliente (P-12).
+
 ## Dores
 | # | Dor | Quem sente | Impacto | Fonte |
 |---|-----|-----------|---------|-------|

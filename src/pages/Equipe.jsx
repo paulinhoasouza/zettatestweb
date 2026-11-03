@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import { useApp, TituloTela, Pill, Gaveta, Campo, Botao, Avatar, Vazio } from '../components/ui.jsx'
+import { useApp, TituloTela, Pill, Gaveta, Campo, Botao, Avatar, Vazio, Presenca, Interruptor } from '../components/ui.jsx'
 import { api } from '../lib/api.js'
+import { PERFIS, rotuloPerfil } from '../lib/business.js'
 import { data } from '../lib/format.js'
 
 export default function Equipe() {
@@ -21,7 +22,7 @@ export default function Equipe() {
               {dados.equipe.map((m, i) => (
                 <tr key={m.id}>
                   <td className="col-pessoa"><Avatar nome={m.nome} indice={i} /><span><strong>{m.nome}{m.id === eu.id && <span className="voce"> (você)</span>}</strong><small>{m.email || <span className="mono">{m.id.slice(0, 8)}…</span>}</small></span></td>
-                  <td>{m.perfil === 'admin' ? 'Administrador' : 'Comercial'}</td>
+                  <td>{rotuloPerfil(m.perfil)}</td>
                   <td><Pill tom={m.ativo ? 'positivo' : 'neutro'}>{m.ativo ? 'Ativo' : 'Sem acesso'}</Pill></td>
                   <td className="num">{data(m.criado_em)}</td>
                   {admin && <td className="col-acao"><button type="button" className="link-acao" onClick={() => setAberto(m)}>Editar</button></td>}
@@ -37,11 +38,15 @@ export default function Equipe() {
             <li>Copie o <strong>User UID</strong> que aparece na lista.</li>
             <li>Aqui, clique em <strong>Liberar acesso</strong>, cole o UID e escolha o perfil.</li>
           </ol>
-          <p><strong>Administrador</strong> também gerencia esta tela. <strong>Comercial</strong> trabalha com clientes, solicitações e propostas.</p>
+          <h2>Perfis</h2>
+          <ul className="perfis">
+            {Object.entries(PERFIS).map(([id, p]) => <li key={id}><strong>{p.rotulo}</strong>{p.descricao}</li>)}
+          </ul>
+          <p className="campo-dica">O perfil Operacional é para quem só faz o fechamento do dia: essa pessoa não vê clientes, propostas, relatórios nem o cadastro de pessoas.</p>
         </aside>
       </div>
       {!dados.equipe.length && <Vazio>Nenhum integrante carregado.</Vazio>}
-      {aberto && <GavetaMembro registro={aberto === 'novo' ? null : aberto} aoFechar={() => setAberto(null)} />}
+      <Presenca>{aberto && <GavetaMembro key={aberto === 'novo' ? 'novo' : aberto.id} registro={aberto === 'novo' ? null : aberto} aoFechar={() => setAberto(null)} />}</Presenca>
     </>
   )
 }
@@ -74,9 +79,12 @@ function GavetaMembro({ registro, aoFechar }) {
         <Campo rotulo="Nome" obrigatorio>{id => <input id={id} value={f.nome} onChange={e => set('nome', e.target.value)} />}</Campo>
         <Campo rotulo="E-mail">{id => <input id={id} type="email" value={f.email} onChange={e => set('email', e.target.value)} />}</Campo>
         <Campo rotulo="Perfil" dica={proprio ? 'Você não pode tirar o seu próprio perfil de administrador.' : undefined}>
-          {(id, d) => <select id={id} aria-describedby={d} value={f.perfil} disabled={proprio} onChange={e => set('perfil', e.target.value)}><option value="comercial">Comercial</option><option value="admin">Administrador</option></select>}
+          {(id, d) => <select id={id} aria-describedby={d} value={f.perfil} disabled={proprio} onChange={e => set('perfil', e.target.value)}>
+            {Object.entries(PERFIS).map(([v, p]) => <option key={v} value={v}>{p.rotulo}</option>)}
+          </select>}
         </Campo>
-        <label className="caixa"><input type="checkbox" checked={f.ativo} disabled={proprio} onChange={e => set('ativo', e.target.checked)} /> Acesso ativo</label>
+        <p className="campo-dica">{PERFIS[f.perfil]?.descricao}</p>
+        <Interruptor ligado={f.ativo} desativado={proprio} aoMudar={v => set('ativo', v)} dica={f.ativo ? 'A pessoa consegue entrar no sistema.' : 'O login fica bloqueado até reativar.'}>Acesso ativo</Interruptor>
         {erro && <p className="erro-inline" role="alert">{erro}</p>}
       </form>
     </Gaveta>

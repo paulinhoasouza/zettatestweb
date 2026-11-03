@@ -3,7 +3,7 @@
 ## Visão
 Um único lugar para o funil comercial da Zetta: cada demanda vira solicitação, cada solicitação pode gerar propostas, e cada alteração de proposta fica registrada como revisão.
 
-## Escopo (v2, 28/10/2026)
+## Escopo (v2, 28/10/2026; v4, 03/11/2026)
 | Módulo / funcionalidade | Status | Prioridade | Observação |
 |---|---|---|---|
 | Login por e-mail e senha, acesso só para quem está ativo na equipe | 🧪 hipótese | MVP | mantido da v1 |
@@ -18,6 +18,12 @@ Um único lugar para o funil comercial da Zetta: cada demanda vira solicitação
 | Equipe e acessos (admin) | 🧪 hipótese | MVP | |
 | Busca global por proposta, número ou cliente | 🧪 hipótese | MVP | |
 | Modo demonstração com dados fictícios (`?demo`) | 🧪 hipótese | MVP | D-016 |
+| Visual estilo Apple: vidro translúcido, movimento suave, aparência clara/escura | ✅ decidido (detalhes 🧪) | v4 | D-020 |
+| Relatórios Comercial, Pessoas e Fechamentos com gráficos interativos e animados | ✅ decidido (composição 🧪) | v4 | D-021 |
+| Pessoas: funcionários, treinamentos, documentos e vencimentos, com renovação e anexos | ✅ decidido (modelo 🧪) | v4 | D-022 |
+| Fechamentos: planilha do dia, calendário, prazo, conferência, divergência e prévia | ✅ decidido (fluxo 🧪) | v4 | D-023 |
+| Perfil Operacional (só fechamentos) e acesso por área | 🧪 hipótese | v4 | D-024 |
+| Operação na visão geral: fechamento de hoje, dias sem fechamento, vencidos | 🧪 hipótese | v4 | |
 | Envio da proposta por e-mail/WhatsApp | 💡 ideia | futuro | |
 
 ## Fora do escopo (v1, segundo o README)
@@ -29,8 +35,9 @@ Um único lugar para o funil comercial da Zetta: cada demanda vira solicitação
 | Camada | Ferramenta | Status | Motivo |
 |---|---|---|---|
 | Front-end | React 18 + Vite 6 | 📌 observado | mantido na v2 |
-| Estilo | framed-sheet (design-taste) + Airtable (awesome-design), IBM Plex Sans | 🧪 hipótese | D-013 |
-| Ícones / gráficos | próprios, em SVG (v2) | 🧪 hipótese | D-014; a v1 usava lucide-react e recharts |
+| Estilo | Estilo Apple (awesome-design) com a marca ZettaMinds; fonte do sistema (SF Pro) e Inter | ✅ decidido · detalhes 🧪 | D-020 (substitui D-013 e o visual de D-019) |
+| Ícones / gráficos | próprios, em SVG; gráficos interativos no padrão da skill de visualização de dados | 🧪 hipótese | D-014, D-021 |
+| Leitura de planilhas | leitor próprio + fflate 0.8.3 (sob demanda) | 🧪 hipótese | D-025 |
 | Banco, Auth, API, arquivos | Supabase (Postgres, PostgREST, Auth, Storage) | 📌 observado | sem servidor próprio para manter |
 | Regras críticas | Funções `salvar_proposta` e `mudar_status_proposta` | 🧪 hipótese | `supabase/01_estrutura.sql` (v2) |
 | Hospedagem | Cloudflare Pages (build `npm run build`, saída `dist`) | 📌 observado | |
