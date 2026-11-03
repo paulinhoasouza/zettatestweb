@@ -1,10 +1,14 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { api, pronto, sairDoDemo } from './lib/api.js'
 import { useRota, href, ir } from './lib/rota.js'
-import { STATUS_EM_ABERTO, SOLICITACAO_ATIVA } from './lib/business.js'
+import {
+  STATUS_EM_ABERTO, SOLICITACAO_ATIVA, podeVerTela, telaInicial, rotuloPerfil, vencimentos, resumoFechamentos,
+  chaveDia, somarDias, PERFIS,
+} from './lib/business.js'
 import { hora } from './lib/format.js'
-import Icon, { Logo } from './components/Icon.jsx'
-import { AppCtx, Aviso, Botao, Avatar } from './components/ui.jsx'
+import { useAparencia, useIndicador } from './lib/anima.js'
+import Icon, { Logo, LogoAuto } from './components/Icon.jsx'
+import { AppCtx, Aviso, Botao, Avatar, Presenca } from './components/ui.jsx'
 import Login from './pages/Login.jsx'
 import VisaoGeral from './pages/VisaoGeral.jsx'
 import Propostas from './pages/Propostas.jsx'
@@ -13,15 +17,33 @@ import Solicitacoes from './pages/Solicitacoes.jsx'
 import Clientes from './pages/Clientes.jsx'
 import Relatorios from './pages/Relatorios.jsx'
 import Equipe from './pages/Equipe.jsx'
+import Pessoas from './pages/Pessoas.jsx'
+import Fechamentos from './pages/Fechamentos.jsx'
 
-const NAV = [
-  { id: 'visao-geral', rotulo: 'Visão geral', icone: 'visao' },
-  { id: 'propostas', rotulo: 'Propostas', icone: 'proposta', contaRotulo: 'em aberto' },
-  { id: 'solicitacoes', rotulo: 'Solicitações', icone: 'solicitacao', contaRotulo: 'ativas' },
-  { id: 'clientes', rotulo: 'Clientes', icone: 'clientes' },
-  { id: 'relatorios', rotulo: 'Relatórios', icone: 'relatorio' },
+const GRUPOS = [
+  {
+    rotulo: 'Comercial',
+    itens: [
+      { id: 'visao-geral', rotulo: 'Visão geral', icone: 'visao' },
+      { id: 'propostas', rotulo: 'Propostas', icone: 'proposta', contaRotulo: 'em aberto' },
+      { id: 'solicitacoes', rotulo: 'Solicitações', icone: 'solicitacao', contaRotulo: 'ativas' },
+      { id: 'clientes', rotulo: 'Clientes', icone: 'clientes' },
+      { id: 'relatorios', rotulo: 'Relatórios', icone: 'relatorio' },
+    ],
+  },
+  {
+    rotulo: 'Operação',
+    itens: [
+      { id: 'pessoas', rotulo: 'Pessoas', icone: 'pessoas', contaRotulo: 'com validade vencida', alerta: true },
+      { id: 'fechamentos', rotulo: 'Fechamentos', icone: 'fechamento', contaRotulo: 'pedindo atenção', alerta: true },
+    ],
+  },
 ]
-const VAZIO = { clientes: [], solicitacoes: [], propostas: [], itens: [], revisoes: [], statusHistorico: [], historico: [], equipe: [], anexos: [] }
+const TODAS = [...GRUPOS.flatMap(g => g.itens), { id: 'equipe', rotulo: 'Equipe e acessos' }]
+const VAZIO = {
+  clientes: [], solicitacoes: [], propostas: [], itens: [], revisoes: [], statusHistorico: [], historico: [], equipe: [], anexos: [],
+  funcionarios: [], treinamentos: [], documentos: [], fechamentos: [], fechamentoAjustes: null, pendente04: false,
+}
 
 export default function App() {
   if (!pronto) return <TelaConfigurar />
@@ -40,8 +62,8 @@ function Autenticado() {
   }, [])
 
   useEffect(() => {
-    if (sessao === undefined) return
-    if (!sessao) { setMembro(null); return }
+    if (sessao === undefined) return undefined
+    if (!sessao) { setMembro(null); return undefined }
     let vivo = true
     setMembro(undefined)
     api.membro(sessao.user.id).then(m => vivo && setMembro(m)).catch(() => vivo && setMembro(null))
@@ -60,18 +82,20 @@ function Shell({ eu, sessao }) {
   const [estado, setEstado] = useState({ carregando: true, erro: null, em: null })
   const [aviso, setAviso] = useState(null)
   const [menuAberto, setMenuAberto] = useState(false)
+  const [aparencia, setAparencia] = useAparencia()
+  const tempo = useRef(0)
 
   const notificar = useCallback((texto, tipo = 'erro') => {
-    setAviso({ texto, tipo })
-    window.clearTimeout(notificar.t)
-    notificar.t = window.setTimeout(() => setAviso(null), tipo === 'erro' ? 8000 : 4000)
+    setAviso({ texto, tipo, id: Date.now() })
+    window.clearTimeout(tempo.current)
+    tempo.current = window.setTimeout(() => setAviso(null), tipo === 'erro' ? 8000 : 4000)
   }, [])
 
   const recarregar = useCallback(async () => {
     setEstado(e => ({ ...e, carregando: true }))
     try {
       const d = await api.carregarTudo()
-      setDados(d)
+      setDados({ ...VAZIO, ...d })
       setEstado({ carregando: false, erro: null, em: new Date() })
     } catch (e) {
       setEstado(s => ({ ...s, carregando: false, erro: e.message }))
@@ -87,28 +111,45 @@ function Shell({ eu, sessao }) {
     const solicitacoes = por(dados.solicitacoes)
     const equipe = por(dados.equipe)
     const clienteDaProposta = p => clientes[solicitacoes[p.solicitacao_id]?.cliente_id]
-    return { clientes, solicitacoes, equipe, propostas: por(dados.propostas), clienteDaProposta }
+    return { clientes, solicitacoes, equipe, propostas: por(dados.propostas), funcionarios: por(dados.funcionarios), clienteDaProposta }
+  }, [dados])
+
+  const perfil = eu.perfil
+  const tela = podeVerTela(perfil, rota.tela) ? rota.tela : telaInicial(perfil)
+  useEffect(() => {
+    if (rota.tela && !podeVerTela(perfil, rota.tela)) window.location.replace(`#/${telaInicial(perfil)}`)
+  }, [rota.tela, perfil])
+
+  const contagens = useMemo(() => {
+    const hoje = chaveDia()
+    const r = resumoFechamentos(dados.fechamentos, dados.fechamentoAjustes, somarDias(hoje, -30), hoje)
+    return {
+      propostas: dados.propostas.filter(p => STATUS_EM_ABERTO.includes(p.status)).length,
+      solicitacoes: dados.solicitacoes.filter(x => SOLICITACAO_ATIVA.includes(x.status)).length,
+      pessoas: vencimentos(dados).filter(v => v.codigo === 'vencido').length,
+      fechamentos: r.atrasados + r.divergentes + r.pendentes,
+    }
   }, [dados])
 
   const ctx = { dados, mapas, eu, sessao, recarregar, notificar, estado, demo: api.demo }
-  const contagens = {
-    propostas: dados.propostas.filter(p => STATUS_EM_ABERTO.includes(p.status)).length,
-    solicitacoes: dados.solicitacoes.filter(x => SOLICITACAO_ATIVA.includes(x.status)).length,
-  }
-  const tela = rota.tela
-  const ativo = tela === 'equipe' ? 'equipe' : NAV.find(n => n.id === tela)?.id || 'visao-geral'
-  const rotuloTela = tela === 'equipe' ? 'Equipe' : NAV.find(n => n.id === ativo)?.rotulo
+  const rotuloTela = TODAS.find(n => n.id === tela)?.rotulo || 'Visão geral'
+  const grupos = GRUPOS.map(g => ({ ...g, itens: g.itens.filter(n => podeVerTela(perfil, n.id)) })).filter(g => g.itens.length)
+  const [trilho, estiloPolegar] = useIndicador(tela, grupos.map(g => g.itens.length).join())
 
   let pagina
   if (tela === 'propostas' && rota.id) pagina = <PropostaDetalhe key={rota.id + rota.params.toString()} id={rota.id} params={rota.params} />
   else if (tela === 'propostas') pagina = <Propostas params={rota.params} />
   else if (tela === 'solicitacoes') pagina = <Solicitacoes params={rota.params} />
   else if (tela === 'clientes') pagina = <Clientes params={rota.params} />
-  else if (tela === 'relatorios') pagina = <Relatorios />
+  else if (tela === 'relatorios') pagina = <Relatorios params={rota.params} />
   else if (tela === 'equipe') pagina = <Equipe />
+  else if (tela === 'pessoas') pagina = <Pessoas params={rota.params} />
+  else if (tela === 'fechamentos') pagina = <Fechamentos params={rota.params} />
   else pagina = <VisaoGeral />
 
   const sair = async () => { if (api.demo) { sairDoDemo(); return } try { await api.sair() } catch (e) { notificar(e.message) } }
+  const proximaAparencia = { auto: 'clara', clara: 'escura', escura: 'auto' }[aparencia]
+  const nomeAparencia = { auto: 'automática (segue o sistema)', clara: 'clara', escura: 'escura' }[aparencia]
 
   return (
     <AppCtx.Provider value={ctx}>
@@ -116,73 +157,103 @@ function Shell({ eu, sessao }) {
       <div className={`moldura ${menuAberto ? 'menu-aberto' : ''}`}>
         <aside className="lateral" aria-label="Navegação">
           <div className="produto">
-            <Logo altura={34} />
+            <LogoAuto altura={32} />
             <button type="button" className="btn-icone so-celular" aria-label="Fechar menu" onClick={() => setMenuAberto(false)}><Icon nome="fechar" /></button>
           </div>
           <p className="produto-nome">Zetta Propostas</p>
-          <span className="nav-grupo">Menu</span>
-          <nav className="nav">
-            {NAV.map(n => (
-              <a key={n.id} href={href(n.id)} className={ativo === n.id ? 'ativo' : ''} aria-current={ativo === n.id ? 'page' : undefined}>
-                <Icon nome={n.icone} /><span>{n.rotulo}</span>
-                {contagens[n.id] > 0 && <b className="nav-conta num" aria-label={`${contagens[n.id]} ${n.contaRotulo}`}>{contagens[n.id]}</b>}
-              </a>
+          <div className="navegacao" ref={trilho}>
+            <span className="polegar" style={estiloPolegar} aria-hidden="true" />
+            {grupos.map(g => (
+              <div key={g.rotulo}>
+                <span className="nav-grupo">{g.rotulo}</span>
+                <nav className="nav" aria-label={g.rotulo}>
+                  {g.itens.map(n => (
+                    <a key={n.id} href={href(n.id)} className={tela === n.id ? 'ativo' : ''} data-ativo={tela === n.id} aria-current={tela === n.id ? 'page' : undefined}>
+                      <Icon nome={n.icone} tamanho={17} /><span>{n.rotulo}</span>
+                      {contagens[n.id] > 0 && <b className={`nav-conta num ${n.alerta ? 'alerta' : ''}`} aria-label={`${contagens[n.id]} ${n.contaRotulo}`}>{contagens[n.id]}</b>}
+                    </a>
+                  ))}
+                </nav>
+              </div>
             ))}
-          </nav>
-          <span className="nav-grupo">Geral</span>
-          <nav className="nav">
-            <a href={href('equipe')} className={ativo === 'equipe' ? 'ativo' : ''} aria-current={ativo === 'equipe' ? 'page' : undefined}>
-              <Icon nome="equipe" /><span>Equipe e acessos</span>
-            </a>
-            <button type="button" onClick={sair}><Icon nome="sair" /><span>{api.demo ? 'Sair da demonstração' : 'Sair'}</span></button>
-          </nav>
-          <div className="cartao-demo">
-            <span className="cd-icone"><Icon nome="raio" /></span>
-            {api.demo ? (
-              <>
-                <strong>Você está na demonstração</strong>
-                <p>Os dados são fictícios e ficam só neste navegador.</p>
-              </>
-            ) : (
-              <>
-                <strong>Mostre para um cliente</strong>
-                <p>O app completo com dados fictícios, sem tocar no banco.</p>
-                <a className="cd-botao" href="?demo" target="_blank" rel="noopener">Abrir demonstração</a>
-              </>
-            )}
+            <span className="nav-grupo">Geral</span>
+            <nav className="nav" aria-label="Geral">
+              {podeVerTela(perfil, 'equipe') && (
+                <a href={href('equipe')} className={tela === 'equipe' ? 'ativo' : ''} data-ativo={tela === 'equipe'} aria-current={tela === 'equipe' ? 'page' : undefined}>
+                  <Icon nome="equipe" tamanho={17} /><span>Equipe e acessos</span>
+                </a>
+              )}
+              <button type="button" onClick={sair}><Icon nome="sair" tamanho={17} /><span>{api.demo ? 'Sair da demonstração' : 'Sair'}</span></button>
+            </nav>
           </div>
+          <CartaoDemo eu={eu} />
         </aside>
 
-        <header className="topo">
-          <button type="button" className="btn-icone so-celular" aria-label="Abrir menu" onClick={() => setMenuAberto(true)}><Icon nome="menu" /></button>
-          <span className="topo-tela so-celular">{rotuloTela}</span>
-          <BuscaGlobal dados={dados} mapas={mapas} />
-          <div className="topo-dir">
-            {api.demo && <span className="pill pill-aviso" title="Dados fictícios guardados só neste navegador">Demonstração</span>}
-            <button type="button" className="btn-redondo" aria-label="Atualizar dados" title={estado.em ? `Atualizado às ${hora(estado.em)}. Clique para atualizar.` : 'Atualizar dados'} onClick={recarregar} disabled={estado.carregando}>
-              <Icon nome="atualizar" className={estado.carregando ? 'girando' : ''} />
-            </button>
-            <div className="usuario">
-              <Avatar nome={eu.nome} />
-              <div><strong>{eu.nome}</strong><span>{eu.email || (eu.perfil === 'admin' ? 'Administrador' : 'Comercial')}</span></div>
+        <div className="principal">
+          <header className="topo">
+            <button type="button" className="btn-icone so-celular" aria-label="Abrir menu" onClick={() => setMenuAberto(true)}><Icon nome="menu" tamanho={18} /></button>
+            <span className="topo-tela so-celular">{rotuloTela}</span>
+            {perfil !== 'operacional' && <BuscaGlobal dados={dados} mapas={mapas} />}
+            <div className="topo-dir">
+              {api.demo && <span className="pill pill-aviso" title="Dados fictícios guardados só neste navegador">Demonstração</span>}
+              <button type="button" className="btn-redondo" aria-label={`Aparência ${nomeAparencia}. Mudar para ${proximaAparencia}.`} title={`Aparência: ${nomeAparencia}`}
+                onClick={() => setAparencia(proximaAparencia)}>
+                <Icon nome={{ auto: 'auto', clara: 'sol', escura: 'lua' }[aparencia]} />
+              </button>
+              <button type="button" className="btn-redondo" aria-label="Atualizar dados" title={estado.em ? `Atualizado às ${hora(estado.em)}. Clique para atualizar.` : 'Atualizar dados'} onClick={recarregar} disabled={estado.carregando}>
+                <Icon nome="atualizar" className={estado.carregando ? 'girando' : ''} />
+              </button>
+              <div className="usuario">
+                <Avatar nome={eu.nome} />
+                <div><strong>{eu.nome}</strong><span>{eu.email || rotuloPerfil(perfil)}</span></div>
+              </div>
             </div>
-          </div>
-        </header>
+          </header>
 
-        <main className="folha" id="conteudo" tabIndex={-1}>
-          {estado.erro && (
-            <div className="erro-bloco" role="alert">
-              <Icon nome="alerta" />
-              <span>Não foi possível carregar os dados{estado.em ? ` (última atualização às ${hora(estado.em)})` : ''}: {estado.erro}</span>
-              <Botao variante="texto" onClick={recarregar}>Tentar de novo</Botao>
-            </div>
-          )}
-          {pagina}
-        </main>
+          <main className="folha" id="conteudo" tabIndex={-1}>
+            {estado.erro && (
+              <div className="erro-bloco" role="alert">
+                <Icon nome="alerta" />
+                <span>Não foi possível carregar os dados{estado.em ? ` (última atualização às ${hora(estado.em)})` : ''}: {estado.erro}</span>
+                <Botao variante="texto" onClick={recarregar}>Tentar de novo</Botao>
+              </div>
+            )}
+            <div className="pagina" key={tela + (rota.id || '')}>{pagina}</div>
+          </main>
+        </div>
       </div>
       <div className="sombra-menu" onClick={() => setMenuAberto(false)} aria-hidden="true" />
-      <Aviso aviso={aviso} aoFechar={() => setAviso(null)} />
+      <Presenca>{aviso && <Aviso key={aviso.id} aviso={aviso} aoFechar={() => setAviso(null)} />}</Presenca>
     </AppCtx.Provider>
+  )
+}
+
+function CartaoDemo({ eu }) {
+  if (!api.demo) {
+    return (
+      <div className="cartao-demo">
+        <span className="cd-icone"><Icon nome="raio" /></span>
+        <strong>Mostre para um cliente</strong>
+        <p>O app completo com dados fictícios, sem tocar no banco.</p>
+        <a className="cd-botao" href="?demo" target="_blank" rel="noopener">Abrir demonstração</a>
+      </div>
+    )
+  }
+  const usuarios = api.usuarios?.() || []
+  return (
+    <div className="cartao-demo">
+      <span className="cd-icone"><Icon nome="raio" /></span>
+      <strong>Você está na demonstração</strong>
+      <p>Os dados são fictícios e ficam só neste navegador.</p>
+      {usuarios.length > 1 && (
+        <div className="cd-como">
+          <label htmlFor="ver-como">Ver como</label>
+          <select id="ver-como" value={eu.id} onChange={e => api.entrarComo(e.target.value)}>
+            {usuarios.map(u => <option key={u.id} value={u.id}>{u.nome.split(' ')[0]} · {PERFIS[u.perfil]?.rotulo || u.perfil}</option>)}
+          </select>
+        </div>
+      )}
+    </div>
   )
 }
 
@@ -203,15 +274,17 @@ function BuscaGlobal({ dados, mapas }) {
       .map(p => ({ id: p.id, rotulo: p.titulo, sub: `${p.numero} · ${mapas.clienteDaProposta(p)?.nome || '—'}`, link: `propostas/${p.id}`, tipo: 'Proposta' }))
     const clis = dados.clientes.filter(c => tem(c.nome, c.contato, c.documento)).slice(0, 3)
       .map(c => ({ id: c.id, rotulo: c.nome, sub: c.cidade || c.contato || '', link: `clientes?abrir=${c.id}`, tipo: 'Cliente' }))
-    return [...props, ...clis]
+    const pessoas = dados.funcionarios.filter(f => tem(f.nome, f.cargo, f.setor)).slice(0, 3)
+      .map(f => ({ id: f.id, rotulo: f.nome, sub: [f.cargo, f.setor].filter(Boolean).join(' · '), link: `pessoas?abrir=${f.id}`, tipo: 'Pessoa' }))
+    return [...props, ...clis, ...pessoas]
   }, [termo, dados, mapas])
   const escolher = r => { setQ(''); setAberta(false); ir(r.link) }
   return (
     <div className="busca-global" onBlur={e => { if (!e.currentTarget.contains(e.relatedTarget)) setAberta(false) }}>
       <label className="busca">
         <Icon nome="busca" />
-        <span className="sr">Buscar propostas e clientes</span>
-        <input ref={campo} type="search" value={q} placeholder="Buscar proposta, número ou cliente" onFocus={() => setAberta(true)}
+        <span className="sr">Buscar propostas, clientes e pessoas</span>
+        <input ref={campo} type="search" value={q} placeholder="Buscar proposta, cliente ou pessoa" onFocus={() => setAberta(true)}
           onChange={e => { setQ(e.target.value); setAberta(true) }}
           onKeyDown={e => { if (e.key === 'Enter' && resultados[0]) escolher(resultados[0]); if (e.key === 'Escape') setAberta(false) }} />
         <kbd className="atalho" aria-hidden="true">Ctrl K</kbd>
@@ -237,7 +310,7 @@ function SemAcesso({ email }) {
   return (
     <div className="tela-cheia">
       <div className="cartao-centro">
-        <Logo altura={40} />
+        <LogoAuto altura={40} />
         <h1>Acesso ainda não liberado</h1>
         <p>Você entrou como <strong>{email}</strong>, mas esta conta não está ativa na equipe da Zetta. Peça a um administrador para incluir o seu usuário em <em>Equipe e acessos</em>.</p>
         <Botao variante="secundario" onClick={() => api.sair()}>Sair desta conta</Botao>
@@ -250,7 +323,7 @@ function TelaConfigurar() {
   return (
     <div className="tela-cheia">
       <div className="cartao-centro">
-        <Logo altura={40} />
+        <LogoAuto altura={40} />
         <h1>Conecte o Supabase</h1>
         <p>O endereço e a chave pública do Supabase ficam em <code>src/config.js</code>. Preencha os dois valores e publique de novo.</p>
         <a className="btn btn-primario" href="?demo">Ver o app com dados de demonstração</a>
@@ -258,4 +331,3 @@ function TelaConfigurar() {
     </div>
   )
 }
-

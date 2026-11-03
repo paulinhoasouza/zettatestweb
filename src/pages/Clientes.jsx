@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { useApp, TituloTela, Busca, Vazio, Carregando, Gaveta, Campo, Botao, Pill } from '../components/ui.jsx'
+import { useApp, TituloTela, Busca, Vazio, Carregando, Gaveta, Campo, Botao, Pill, Presenca } from '../components/ui.jsx'
 import { api } from '../lib/api.js'
 import { href, ir } from '../lib/rota.js'
 import { SOLICITACAO_ATIVA } from '../lib/business.js'
@@ -58,7 +58,7 @@ export default function Clientes({ params }) {
         </div>
       ) : <Vazio acao={!busca && <Botao variante="secundario" onClick={() => ir('clientes?abrir=novo')}>Cadastrar o primeiro cliente</Botao>}>{busca ? `Nenhum cliente encontrado para “${q.trim()}”.` : 'Nenhum cliente cadastrado.'}</Vazio>}
 
-      {aberto && <GavetaCliente registro={aberto === 'novo' ? null : aberto} aoFechar={fechar} />}
+      <Presenca>{aberto && <GavetaCliente key={aberto === 'novo' ? 'novo' : aberto.id} registro={aberto === 'novo' ? null : aberto} aoFechar={fechar} />}</Presenca>
     </>
   )
 }

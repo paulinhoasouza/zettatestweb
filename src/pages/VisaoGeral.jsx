@@ -3,8 +3,9 @@ import Icon from '../components/Icon.jsx'
 import { href } from '../lib/rota.js'
 import {
   precisaAcao, STATUS_COM_CLIENTE, STATUS_EM_ABERTO, SOLICITACAO_ATIVA, taxaConversao, mediana, diasDesde, dataLocal, inicioDoDia, rotulo,
+  variacaoPct, chaveDia, somarDias, situacaoDia, resumoFechamentos, prazoDoDia, vencimentos, podeVerTela, AJUSTES_FECHAMENTO,
 } from '../lib/business.js'
-import { brl, pct, dias, data, mesLongo, iniciais } from '../lib/format.js'
+import { brl, pct, dias, data, mesLongo, iniciais, hora, num } from '../lib/format.js'
 
 const MOTIVO = {
   validade: r => `Validade venceu há ${dias(r.dias)}`,
@@ -32,16 +33,14 @@ function semanaAtual(eventos, agora) {
   })
 }
 
-function variacao(atual, anterior) {
-  const d = atual - anterior
-  if (!anterior && !atual) return { selo: '=', texto: 'nada aprovado nos dois meses' }
-  if (!anterior) return { selo: 'novo', texto: 'nada aprovado no mês passado' }
-  if (d === 0) return { selo: '=', texto: 'igual ao mês passado' }
-  return { selo: `${d > 0 ? '+' : '−'}${brl(Math.abs(d))}`, texto: 'em relação ao mês passado' }
+function textoVariacao(atual, anterior) {
+  if (!anterior && !atual) return 'nada aprovado nos dois meses'
+  if (!anterior) return 'nada aprovado no mês passado'
+  return `${brl(anterior)} no mês passado`
 }
 
 export default function VisaoGeral() {
-  const { dados, mapas, estado } = useApp()
+  const { dados, mapas, estado, eu } = useApp()
   const agora = new Date()
   const { propostas, solicitacoes } = dados
   const primeiraCarga = estado.carregando && !estado.em
@@ -54,7 +53,6 @@ export default function VisaoGeral() {
   const somaEntre = (de, ate) => aprovadas.filter(p => { const t = new Date(p.decidida_em); return t >= de && t < ate }).reduce((s, p) => s + Number(p.valor_total), 0)
   const aprovadoMes = somaEntre(inicioMes, new Date(agora.getFullYear(), agora.getMonth() + 1, 1))
   const aprovadoPassado = somaEntre(inicioMesPassado, inicioMes)
-  const vari = variacao(aprovadoMes, aprovadoPassado)
   const limite90 = new Date(agora.getTime() - 90 * 86400000)
   const decididas90 = propostas.filter(p => ['Aprovada', 'Recusada'].includes(p.status) && new Date(p.decidida_em) >= limite90)
   const aprovadas90 = decididas90.filter(p => p.status === 'Aprovada').length
@@ -88,10 +86,10 @@ export default function VisaoGeral() {
         </>} />
 
       <CartoesKpi itens={[
-        { rotulo: 'Com o cliente', valor: brl(valorComCliente), selo: comCliente.length, legenda: comCliente.length === 1 ? 'proposta aguardando resposta' : 'propostas aguardando resposta', link: href('propostas?vista=quadro') },
-        { rotulo: `Aprovado em ${mesLongo(agora)}`, valor: brl(aprovadoMes), selo: vari.selo, legenda: vari.texto, link: href('relatorios') },
-        { rotulo: 'Conversão em 90 dias', valor: pct(taxaConversao(aprovadas90, decididas90.length)), selo: decididas90.length ? `${aprovadas90}/${decididas90.length}` : null, legenda: decididas90.length ? 'aprovadas entre as decididas' : 'nenhuma proposta decidida', link: href('relatorios') },
-        { rotulo: 'Solicitações ativas', valor: String(ativas.length), selo: atrasadas.length || null, legenda: atrasadas.length ? (atrasadas.length === 1 ? 'com prazo vencido' : 'com prazo vencido') : 'nenhuma com prazo vencido', tom: atrasadas.length ? 'negativo' : null, link: href('solicitacoes') },
+        { rotulo: 'Com o cliente', valor: valorComCliente, formato: brl, selo: comCliente.length, legenda: comCliente.length === 1 ? 'proposta aguardando resposta' : 'propostas aguardando resposta', link: href('propostas?vista=quadro') },
+        { rotulo: `Aprovado em ${mesLongo(agora)}`, valor: aprovadoMes, formato: brl, variacao: variacaoPct(aprovadoMes, aprovadoPassado), legenda: textoVariacao(aprovadoMes, aprovadoPassado), link: href('relatorios') },
+        { rotulo: 'Conversão em 90 dias', valor: taxaConversao(aprovadas90, decididas90.length) ?? '—', formato: v => pct(Math.round(v * 10) / 10), selo: decididas90.length ? `${aprovadas90}/${decididas90.length}` : null, legenda: decididas90.length ? 'aprovadas entre as decididas' : 'nenhuma proposta decidida', link: href('relatorios') },
+        { rotulo: 'Solicitações ativas', valor: ativas.length, formato: v => num(Math.round(v)), selo: atrasadas.length || null, legenda: atrasadas.length ? 'com prazo vencido' : 'nenhuma com prazo vencido', tom: atrasadas.length ? 'negativo' : null, link: href('solicitacoes') },
       ]} />
 
       <div className="painel-grade">
@@ -169,6 +167,8 @@ export default function VisaoGeral() {
           ) : <Vazio>Tudo em dia.</Vazio>}
         </Bloco>
 
+        <Operacao dados={dados} mapas={mapas} eu={eu} agora={agora} />
+
         <Bloco titulo="Funil em aberto" id="funil" className="pg-funil" acao={<a className="link-sutil" href={href('propostas?vista=quadro')}>Ver quadro</a>}>
           <ul className="funil">
             {funil.map(f => (
@@ -187,5 +187,55 @@ export default function VisaoGeral() {
         </Bloco>
       </div>
     </>
+  )
+}
+
+// Operação de hoje: o fechamento do dia, os dias sem fechamento e os vencimentos da equipe.
+function Operacao({ dados, mapas, eu, agora }) {
+  if (dados.pendente04) return null
+  const verPessoas = podeVerTela(eu.perfil, 'pessoas')
+  const aj = { ...AJUSTES_FECHAMENTO, ...(dados.fechamentoAjustes || {}) }
+  const hoje = chaveDia(agora)
+  const fHoje = dados.fechamentos.find(f => f.data === hoje)
+  const sHoje = situacaoDia(hoje, fHoje, aj, agora)
+  const r = resumoFechamentos(dados.fechamentos, aj, somarDias(hoje, -29), hoje, agora)
+  const v = verPessoas ? vencimentos(dados, agora) : []
+  const vencidos = v.filter(i => i.codigo === 'vencido').length
+  const vencendo = v.filter(i => i.codigo === 'vence').length
+  const hojeTxt = {
+    pendente: { tom: 'aviso', titulo: 'Fechamento de hoje pendente', sub: `Envio até ${hora(prazoDoDia(hoje, aj))}` },
+    atrasado: { tom: 'ruim', titulo: 'Fechamento de hoje atrasado', sub: `O prazo era ${hora(prazoDoDia(hoje, aj))}` },
+    enviado: { tom: 'info', titulo: 'Fechamento de hoje enviado', sub: fHoje ? `${mapas.equipe[fHoje.enviado_por]?.nome?.split(' ')[0] || 'Equipe'} às ${hora(fHoje.primeiro_envio_em || fHoje.enviado_em)} · aguardando conferência` : '' },
+    conferido: { tom: 'bom', titulo: 'Fechamento de hoje conferido', sub: fHoje?.valor_total != null ? brl(fHoje.valor_total) : 'Tudo certo' },
+    divergente: { tom: 'aviso', titulo: 'Fechamento de hoje com divergência', sub: fHoje?.nota_conferencia || '' },
+    'sem-expediente': { tom: 'info', titulo: 'Hoje sem expediente', sub: fHoje?.observacoes || '' },
+    livre: { tom: 'info', titulo: 'Hoje não tem fechamento', sub: 'Dia fora da escala de fechamentos' },
+    antes: { tom: 'info', titulo: 'Controle de fechamentos', sub: `Começa em ${data(aj.inicio)}` },
+  }[sHoje]
+  return (
+    <Bloco titulo="Operação hoje" id="operacao" className="pg-operacao" acao={<a className="link-sutil" href={href('fechamentos')}>Ver fechamentos</a>}>
+      <div className="operacao">
+        <a className="op-item" href={href(`fechamentos?dia=${hoje}`)}>
+          <span className={`op-icone tom-${hojeTxt.tom}`}><Icon nome="fechamento" tamanho={18} /></span>
+          <span className="op-texto"><strong>{hojeTxt.titulo}</strong><small>{hojeTxt.sub}</small></span>
+        </a>
+        <a className="op-item" href={href('fechamentos')}>
+          <span className={`op-icone tom-${r.atrasados ? 'ruim' : 'bom'}`}><Icon nome={r.atrasados ? 'x-circulo' : 'check-circulo'} tamanho={18} /></span>
+          <span className="op-texto">
+            <strong>{r.atrasados ? `${r.atrasados} ${r.atrasados === 1 ? 'dia sem fechamento' : 'dias sem fechamento'}` : 'Nenhum dia sem fechamento'}</strong>
+            <small>Últimos 30 dias · {pct(r.pontualidade)} no prazo{r.divergentes ? ` · ${r.divergentes} com divergência` : ''}</small>
+          </span>
+        </a>
+        {verPessoas && (
+          <a className="op-item" href={href('pessoas?vista=vencimentos')}>
+            <span className={`op-icone tom-${vencidos ? 'ruim' : vencendo ? 'aviso' : 'bom'}`}><Icon nome="certificado" tamanho={18} /></span>
+            <span className="op-texto">
+              <strong>{vencidos ? `${vencidos} ${vencidos === 1 ? 'item vencido' : 'itens vencidos'}` : vencendo ? `${vencendo} ${vencendo === 1 ? 'item vence' : 'itens vencem'} em breve` : 'Treinamentos e documentos em dia'}</strong>
+              <small>{vencidos && vencendo ? `e ${vencendo} ${vencendo === 1 ? 'vence' : 'vencem'} em 30 dias` : 'Treinamentos e documentos da equipe'}</small>
+            </span>
+          </a>
+        )}
+      </div>
+    </Bloco>
   )
 }

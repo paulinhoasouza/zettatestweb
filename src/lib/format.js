@@ -44,3 +44,17 @@ export function prazo(v, agora = new Date(), verbo = 'vence') {
 }
 
 export const iniciais = n => (n || '?').trim().split(/\s+/).filter(Boolean).slice(0, 2).map(p => p[0]).join('').toUpperCase()
+
+// Minutos desde o início do dia → "19:42" (ou "00:30 do dia seguinte").
+export function horario(minutos) {
+  if (minutos == null || !Number.isFinite(minutos)) return '—'
+  const m = Math.round(minutos)
+  const dia = Math.floor(m / 1440)
+  const r = ((m % 1440) + 1440) % 1440
+  const t = `${String(Math.floor(r / 60)).padStart(2, '0')}:${String(r % 60).padStart(2, '0')}`
+  return dia > 0 ? `${t} do dia seguinte` : t
+}
+export const diaSemana = v => dataLocal(v).toLocaleDateString('pt-BR', { weekday: 'long' })
+export const dataLonga = v => dataLocal(v).toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })
+export const tamanhoArquivo = b => (b >= 1048576 ? `${(b / 1048576).toFixed(1).replace('.', ',')} MB` : `${Math.max(1, Math.round(b / 1024))} KB`)
+export const pp = n => (n == null ? '—' : `${numero1.format(n)} p.p.`)

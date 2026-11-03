@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { useApp, TituloTela, Abas, Pill, Botao, Campo, Dialogo, Vazio, Bloco } from '../components/ui.jsx'
+import { useApp, TituloTela, Abas, Pill, Botao, Campo, Dialogo, Vazio, Bloco, Presenca } from '../components/ui.jsx'
 import Anexos from '../components/Anexos.jsx'
 import Linha from '../components/Linha.jsx'
 import Icon, { Logo } from '../components/Icon.jsx'
@@ -114,7 +114,7 @@ function Editor({ proposta, solicitacaoInicial }) {
         voltar={<a className="voltar" href={href('propostas')}><Icon nome="esquerda" tamanho={14} />Propostas</a>}
         acoes={!nova && principal && (
           <>
-            {outros.map(s => <Botao key={s} variante={s === 'Cancelada' || s === 'Recusada' ? 'texto' : 'secundario'} onClick={() => pedirMudanca(s)}>{rotuloAcao(s)}</Botao>)}
+            {outros.map(s => <Botao key={s} variante={s === 'Cancelada' || s === 'Recusada' ? 'perigo-texto' : 'secundario'} onClick={() => pedirMudanca(s)}>{rotuloAcao(s)}</Botao>)}
             <Botao variante="primario" icone={principal === 'Aprovada' ? 'check' : null} onClick={() => pedirMudanca(principal)}>{rotuloAcao(principal)}</Botao>
           </>
         )} />
@@ -225,7 +225,7 @@ function Editor({ proposta, solicitacaoInicial }) {
       {aba === 'historico' && <Bloco><Linha eventos={historico} mapas={mapas} /></Bloco>}
       {aba === 'anexos' && proposta && <Anexos entidade="propostas" registroId={proposta.id} anexos={anexos} />}
 
-      {mudanca && <DialogoStatus para={mudanca} proposta={proposta} solicitacao={solicitacao} aoFechar={() => setMudanca(null)} aoConfirmar={confirmarMudanca} rotuloAcao={rotuloAcao(mudanca)} />}
+      <Presenca>{mudanca && <DialogoStatus key={mudanca} para={mudanca} proposta={proposta} solicitacao={solicitacao} aoFechar={() => setMudanca(null)} aoConfirmar={confirmarMudanca} rotuloAcao={rotuloAcao(mudanca)} />}</Presenca>
     </>
   )
 }

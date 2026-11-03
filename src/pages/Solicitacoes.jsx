@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { useApp, TituloTela, Abas, Busca, Pill, Vazio, Carregando, Gaveta, Campo, Botao } from '../components/ui.jsx'
+import { useApp, TituloTela, Abas, Busca, Pill, Vazio, Carregando, Gaveta, Campo, Botao, Presenca } from '../components/ui.jsx'
 import Anexos from '../components/Anexos.jsx'
 import Linha from '../components/Linha.jsx'
 import Icon from '../components/Icon.jsx'
@@ -83,7 +83,7 @@ export default function Solicitacoes({ params }) {
         </div>
       ) : <Vazio>{busca ? `Nada encontrado para “${q.trim()}”.` : 'Nenhuma solicitação nesta situação.'}</Vazio>}
 
-      {aberta && <GavetaSolicitacao registro={aberta === 'nova' ? null : aberta} aoFechar={() => navegar({ abrir: null })} />}
+      <Presenca>{aberta && <GavetaSolicitacao key={aberta === 'nova' ? 'nova' : aberta.id} registro={aberta === 'nova' ? null : aberta} aoFechar={() => navegar({ abrir: null })} />}</Presenca>
     </>
   )
 }
