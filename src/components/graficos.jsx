@@ -85,10 +85,11 @@ export function VistaGrafico({ tabela, children, rotulo }) {
   )
 }
 
+// A chave da legenda tem a forma da marca: quadrado para colunas, traço para linhas.
 export function Legenda({ itens }) {
   return (
     <ul className="g-legenda">
-      {itens.map(i => <li key={i.rotulo}><i className={`g-chave g-chave-${i.chave}`} aria-hidden="true" />{i.rotulo}</li>)}
+      {itens.map(i => <li key={i.rotulo}><i className={`g-chave g-chave-${i.chave} ${i.tipo === 'coluna' ? 'forma-coluna' : ''}`} aria-hidden="true" />{i.rotulo}</li>)}
     </ul>
   )
 }
@@ -164,7 +165,7 @@ export function GraficoColunasLinha({ rotulos, titulos, series, formato = brl, f
             linhas={series.map(s => ({ rotulo: s.rotulo, valor: formato(s.valores[ativo] || 0), chave: s.chave }))} />
         )}
       </div>
-      {series.length > 1 && <Legenda itens={series.map(s => ({ rotulo: s.rotulo, chave: s.chave }))} />}
+      {series.length > 1 && <Legenda itens={series.map(s => ({ rotulo: s.rotulo, chave: s.chave, tipo: s.tipo }))} />}
     </figure>
   )
 }
