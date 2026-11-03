@@ -43,7 +43,7 @@ Se o projeto Pages da v1 já publica a partir do repositório, o push da v2 já 
 
 ## Atualização v4 — Pessoas e Fechamentos (03/11/2026)
 
-A v4 traz duas abas que precisam de tabelas novas no banco. Faça **antes** de levar a v4 para o `main` (5 minutos):
+A v4 traz duas abas que precisam de tabelas novas no banco. No projeto `zetta-propostas` este passo **já foi feito em 03/11/2026**; para outro projeto, faça **antes** de levar a v4 para o `main` (5 minutos):
 
 1. Abra https://supabase.com/dashboard/project/vbpktfmngjirwasawktx/sql/new
 2. Cole todo o conteúdo de `supabase/04_pessoas_fechamentos.sql` e clique em **Run**.

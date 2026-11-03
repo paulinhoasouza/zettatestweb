@@ -286,7 +286,7 @@ Nunca usar `service_role`, `sb_secret_...` ou a senha do banco em variável `VIT
 
 ## 10. Pessoas e fechamentos (v4)
 
-Arquivo do banco: `supabase/04_pessoas_fechamentos.sql`, executado depois do `01_estrutura.sql` (idempotente). Testes: `supabase/testes/testes_04.sql`.
+Arquivo do banco: `supabase/04_pessoas_fechamentos.sql`, executado depois do `01_estrutura.sql` (idempotente). Testes: `supabase/testes/testes_04.sql`. Aplicado no projeto `zetta-propostas` em 03/11/2026.
 
 ### Quem acessa o quê (D-024)
 

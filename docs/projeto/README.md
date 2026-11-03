@@ -22,14 +22,13 @@ Um sistema web com login restrito à equipe, cadastro de clientes, solicitaçõe
 - ✅ José criou o login `paulinhoalcantara44@gmail.com` em 28/10/2026 e ele entrou como administrador; cadastro público desligado.
 - ✅ v3 no ar desde 29/10/2026 (visual ZettaMinds, D-019), aprovada por José; Worker `zettatestweb` na Cloudflare, publicado a partir do `main`. A v2 foi testada por José em 28/10/2026; regras e banco não mudaram na v3.
 - 🧪 Decisões D-006 a D-018 da reescrita aguardam confirmação (P-09).
-- 🧪 v4 pronta no branch `claude/fervent-maxwell-f0njhi` (03/11/2026): visual estilo Apple com aparência clara e escura (D-020), relatórios Comercial, Pessoas e Fechamentos com gráficos interativos (D-021), aba Pessoas (D-022), aba Fechamentos com prévia da planilha (D-023) e perfil Operacional (D-024). Testada na demonstração (`?demo`), com testes de regras, do banco e de ponta a ponta no navegador. Falta aplicar a migração `supabase/04_pessoas_fechamentos.sql` no Supabase (R-13) e José aprovar (P-17).
+- 🧪 v4 pronta no branch `claude/fervent-maxwell-f0njhi` (03/11/2026): visual estilo Apple com aparência clara e escura (D-020), relatórios Comercial, Pessoas e Fechamentos com gráficos interativos (D-021), aba Pessoas (D-022), aba Fechamentos com prévia da planilha (D-023) e perfil Operacional (D-024). Testada na demonstração (`?demo`), com testes de regras, do banco e de ponta a ponta no navegador. Migração `supabase/04_pessoas_fechamentos.sql` aplicada no Supabase em 03/11/2026 (José, pelo SQL Editor) e conferida pelo Claude. PR [paulinhoasouza/zettatestweb#1](https://github.com/paulinhoasouza/zettatestweb/pull/1) aberto para o `main`, aguardando José (P-17).
 
 ## Próximos passos
-1. Ver a v4 na demonstração do branch e aprovar ou pedir ajustes (P-17) — José
-2. Aplicar `supabase/04_pessoas_fechamentos.sql` no Supabase antes de levar a v4 ao `main` (R-13, P-18) — José ou Claude
+1. Revisar e fazer o merge do PR #1 para publicar a v4 (P-17) — José
+2. Seguir as seções v4 do `TESTES.md` no site publicado — José e Claude
 3. Responder P-12 a P-16 (para quem são Pessoas e Fechamentos, conteúdo da planilha, dias e horário) — José
 4. Tornar o repositório privado (P-01), ainda mais com dados de pessoas — José
-5. Seguir o `TESTES.md` no site publicado — José e Claude
 
 ## Mapa do dossiê
 - [Descoberta](01-descoberta.md) · [Solução](02-solucao.md) · [Arquitetura](03-arquitetura.md) · [Decisões](04-decisoes.md) · [Ideias e pendências](05-ideias-e-pendencias.md) · [Diário](diario.md)
